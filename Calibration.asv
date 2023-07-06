@@ -385,7 +385,7 @@ switch present_state
 
         [phase1_error, phase2_error] = phase_offset(polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index)), closest_measured_point(1, 1));
         
-        if abs(phase1_error) < phase_error_criteria*0.4 && abs(phase2_error) < phase_error_criteria*0.4
+        if abs(phase1_error) < phase_error_criteria*0.6 && abs(phase2_error) < phase_error_criteria*0.6
             valid = 1;
         else
             valid = measurement_validation(filtered_measurements(:, 1));
