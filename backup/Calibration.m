@@ -18,6 +18,7 @@ filter_tolerance = 1.3;
 
 % load("./RTPSdata/sp/Sp.mat", "S_dd21");
 load("simulation_data.mat");
+%load('gain_resolution.mat');
 
 DC_offset = 0;
 phase1_offset = 0;
@@ -30,7 +31,7 @@ lowest_detectable_gain = 10^(lowest_detectable_gain_dB/10);
 
 target_gain_resolution_dB = 1;
 RTPS_gain_resolution_dB = 0.5;
-RTPS_gain_resolution = 0.025;
+RTPS_gain_resolution = 0.02;
 
 num_target_gain_states = (0 - lowest_detectable_gain_dB)/target_gain_resolution_dB + 1;
 num_target_phase_states = 64;
@@ -64,7 +65,7 @@ target_phase_states = linspace(0, 2*pi - target_phase_resolution, num_target_pha
 
 RTPS_gain_states_dB = linspace(-1*(num_target_gain_states - 1), 0, num_RTPS_gain_states);
 RTPS_gain_states = 10.^(RTPS_gain_states_dB./10);
-RTPS_phase_states = linspace(0, 2*pi, num_RTPS_phase_states);
+RTPS_phase_states = linspace(0, 2*pi - RTPS_phase_resolution, num_RTPS_phase_states);
 
 Current_Calibration_Gain_Index = Starting_Gain_Index;
 Current_Calibration_Phase_Index = 1;
@@ -104,18 +105,15 @@ total_measurement_counter = 0;
 % 
 % 
 % end
+% 
+%         target_point = polar2cartesian(0.316, 2);
+%         [vector1_phase, vector2_phase] = cartesian2phases(target_point);
+% 
+% 
+%     vector1_phase_index = phase2RTPS_phase_index(vector1_phase) + 1
+%     vector2_phase_index = phase2RTPS_phase_index(vector2_phase) + 1
+% 
 
-% for i = 1:1:90
-%     for j = 1:1:90
-% 
-%              current_point = measure([RTPS_phase_states(i) RTPS_phase_states(j)], "phases", 1)*2.49;
-%              if abs(current_point) <= 0.6
-%                  plot(current_point, "o");
-%                  hold on
-%              end
-% 
-%     end
-% end
 
 % plot(sweep_reading(1, :), "o");
 % sweep_reading_ang = angle(sweep_reading)*180/pi;
@@ -264,7 +262,9 @@ switch present_state
 
         L2 = mean([L2_1 L2_2 L2_3 L2_4], "all") * magnitude_scaling_factor;
         L1 = mean([L1_1 L1_2 L1_3 L1_4], "all") * magnitude_scaling_factor;
-        
+
+        gain_resolution_calibration();
+
         next_state = "Phase Offset Calibration";
 
         next_measurements(1, 1) = target_gain_states(Current_Calibration_Gain_Index);
@@ -385,7 +385,7 @@ switch present_state
 
         [phase1_error, phase2_error] = phase_offset(polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index)), closest_measured_point(1, 1));
         
-        if abs(phase1_error) < phase_error_criteria*0.6 && abs(phase2_error) < phase_error_criteria*0.6
+        if abs(phase1_error) < phase_error_criteria*0.4 && abs(phase2_error) < phase_error_criteria*0.4
             valid = 1;
         else
             valid = measurement_validation(filtered_measurements(:, 1));
@@ -992,7 +992,7 @@ end
 
 function point = phase2cartesian(phase1, phase2)
 global L1 L2
-    point = L1*cos(phase1) + L2*cos(phase1) + 1i*(L1*sin(phase1) + L2*sin(phase2));
+    point = L1*cos(phase1) + L2*cos(phase2) + 1i*(L1*sin(phase1) + L2*sin(phase2));
 end
 
 
@@ -1261,5 +1261,44 @@ global Current_Calibration_Gain_Index target_gain_states target_gain_states_dB t
         disp("Calibration finish");
         disp("Total number of measurements for " + (Ending_Gain_Index - Starting_Gain_Index + 1) + " gain circles: " + total_measurement_counter);
     end
+
+end
+
+
+
+
+
+function gain_resolution_calibration()
+global RTPS_phase_states num_RTPS_phase_states gain_resolution L1 L2
+
+data = zeros(1, num_RTPS_phase_states*num_RTPS_phase_states);
+
+L = (L1 + L2)/2;
+
+% figure
+for i = 1:1:num_RTPS_phase_states
+    for j = 1:1:num_RTPS_phase_states
+     data((i-1)*num_RTPS_phase_states + j) = L*cos(RTPS_phase_states(i)) + L*cos(RTPS_phase_states(j)) + 1i*(L*sin(RTPS_phase_states(i)) + L*sin(RTPS_phase_states(j)));
+%      plot(data((i-1)*num_RTPS_phase_states + j), "O");
+%      hold on
+    end
+end
+% hold off
+
+index = find(abs(imag(data)) < 0.05);
+gains = unique(sort(abs(data(index))));
+
+index = find(gains > 0.001);
+gains = unique(round(gains(index)*10^4)/10^4);
+
+gain_resolution = zeros(2, size(gains,2) - 1);
+
+for i = 1:1:size(gains, 2) - 1
+    gain_resolution(1, i) = gains(i);
+    gain_resolution(2, i) = gains(i + 1) - gains(i);
+end
+
+% figure
+% plot(gain_resolution(1, :), gain_resolution(2, :));
 
 end
