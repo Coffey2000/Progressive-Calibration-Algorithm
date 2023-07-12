@@ -1,7 +1,7 @@
 global DC_offset L1 L2 phase1_offset phase2_offset num_target_gain_states num_target_phase_states num_RTPS_gain_states num_RTPS_phase_states Measurements Mapping Current_Calibration_Gain_Index Current_Calibration_Phase_Index target_gain_states ...
-    target_phase_states RTPS_gain_states RTPS_phase_states num_MODES phase_error_criteria kernel_size target_phase_resolution RTPS_phase_resolution S_dd21 simulation_data magnitude_scaling_factor last_phase1_error last_phase2_error target_gain_resolution_dB ...
+    target_phase_states RTPS_gain_states RTPS_phase_states num_MODES phase_error_criteria kernel_size target_phase_resolution RTPS_phase_resolution S_dd21 simulation_data_mode1 magnitude_scaling_factor last_phase1_error last_phase2_error target_gain_resolution_dB ...
     RTPS_gain_resolution_dB lowest_detectable_gain_dB lowest_detectable_gain target_gain_states_dB phase_error_history RTPS_gain_resolution Selected_Measurements Current_Point_Iteration_Count original_kernel_size filter_tolerance Starting_Gain_Index Ending_Gain_Index...
-    measurement_counter total_measurement_counter
+    measurement_counter total_measurement_counter simulation_data_mode2 original_RTPS_phase_resolution original_RTPS_gain_resolution
 
 
 %%
@@ -11,13 +11,14 @@ lowest_detectable_gain_dB = -8;
 Starting_Gain_Index = 5;
 Ending_Gain_Index = 8;
 
-filter_tolerance = 1.3;
+filter_tolerance = 1;
 
 
 %%
 
 % load("./RTPSdata/sp/Sp.mat", "S_dd21");
-load("simulation_data.mat");
+load("simulation_data_mode1.mat");
+load("simulation_data_mode2.mat");
 %load('gain_resolution.mat');
 
 DC_offset = 0;
@@ -52,6 +53,8 @@ phase_error_criteria = RTPS_phase_resolution;
 num_MODES = 9;
 
 original_kernel_size = kernel_size;
+original_RTPS_phase_resolution = RTPS_phase_resolution;
+original_RTPS_gain_resolution = RTPS_gain_resolution;
 
 Measurements = zeros(num_RTPS_phase_states, num_RTPS_phase_states, num_MODES) + 1234;
 %Measurements_code = zeros(2, num_RTPS_phase_states^2*num_MODES);
@@ -120,6 +123,10 @@ total_measurement_counter = 0;
 
 %plot(simulation_data(1:95, 1), "o");
 
+figure;
+set(gcf, 'Position',  [900, 300, 1000, 800]);
+%movegui(gcf,'center');
+
 disp(" ");
 disp("Starting Calibration with kernel size of " + kernel_size);
 
@@ -155,13 +162,13 @@ while (next_state ~= "Finish Calibration")
         
         if next_choice == "phases"
             for i = 1:1:num_next_measurements
-                current_measured_points(i, 1) = measurementClass.measure(next_measurements(i, :), next_choice, 1, 1);
+                current_measured_points(i, 1) = measurementClass.measure(next_measurements(i, :), next_choice, 2, 1);
                 current_measured_points(i, 2:end) = next_measurements(i, :);
             end
         else
             for i = 1:1:num_next_measurements
-                current_measured_points(2*i - 1, 1) = measurementClass.measure(next_measurements(i, :), next_choice, 1, 1);
-                current_measured_points(2*i, 1) = measurementClass.measure(next_measurements(i, :), next_choice, 1, 2);
+                current_measured_points(2*i - 1, 1) = measurementClass.measure(next_measurements(i, :), next_choice, 2, 1);
+                current_measured_points(2*i, 1) = measurementClass.measure(next_measurements(i, :), next_choice, 2, 2);
                 current_measured_points(2*i - 1, 2:end) = next_measurements(i, :);
                 current_measured_points(2*i, 2:end) = next_measurements(i, :);
             end
@@ -196,7 +203,8 @@ drawnow
 %%
 function [next_measurements, next_choice, next_state] = Calibration_FSM(current_measured_points, present_state)
 global DC_offset L1 L2 phase1_offset phase2_offset num_target_phase_states num_target_gain_states Mapping Current_Calibration_Gain_Index Current_Calibration_Phase_Index target_gain_states ...
-    target_phase_states phase_error_criteria magnitude_scaling_factor phase_error_history Selected_Measurements Current_Point_Iteration_Count kernel_size original_kernel_size Starting_Gain_Index Ending_Gain_Index
+    target_phase_states phase_error_criteria magnitude_scaling_factor phase_error_history Selected_Measurements Current_Point_Iteration_Count kernel_size original_kernel_size Starting_Gain_Index Ending_Gain_Index...
+    RTPS_phase_resolution original_RTPS_phase_resolution original_RTPS_gain_resolution RTPS_gain_resolution
 
 % next_phases is a N by 2 matrix where N is the number of phases to measured next and the 2 columns are phase 1 and phase 2.
 % current_measured_points is a N by 1 vector where N is the number of points in the current measurements.
@@ -416,6 +424,8 @@ switch present_state
         if valid
             Current_Point_Iteration_Count = 0;
             kernel_size = original_kernel_size;
+            % RTPS_phase_resolution = original_RTPS_phase_resolution;
+            % RTPS_gain_resolution = original_RTPS_gain_resolution;
 
             plot(conversionClass.polar2cartesian(closest_measured_point(1, 2), closest_measured_point(1, 3)), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", "r");
             hold on
@@ -463,6 +473,9 @@ switch present_state
 
             if Current_Point_Iteration_Count > 4
                 kernel_size = kernel_size + 4;
+                % kernel_size = kernel_size*4 + 1;
+                % RTPS_phase_resolution = RTPS_phase_resolution/1.5;
+                % RTPS_gain_resolution = RTPS_gain_resolution/1.5;
                 Current_Point_Iteration_Count = 0;
             end
 

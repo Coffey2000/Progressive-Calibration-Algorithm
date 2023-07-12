@@ -40,7 +40,7 @@ classdef measurementClass
             
             if previous_measurement == 1234
                 codeword = conversionClass.vectors2code(vector1_phase, vector2_phase, MODE);
-                reading = measurementClass.SIMULATION_READ(codeword);
+                reading = measurementClass.SIMULATION_READ(codeword, MODE);
                 Measurements(vector1_phase_index, vector2_phase_index, MODE) = reading;
                 measurement_counter = measurement_counter + 1;
                 total_measurement_counter = total_measurement_counter + 1;
@@ -148,8 +148,8 @@ classdef measurementClass
         
         
         
-        function reading = SIMULATION_READ(codeword)
-            global simulation_data magnitude_scaling_factor
+        function reading = SIMULATION_READ(codeword, MODE)
+            global simulation_data_mode1 simulation_data_mode2 magnitude_scaling_factor
         
             codeword_inSequence_bin = flip(dec2bin(codeword, 28));
             codeword1 = codeword_inSequence_bin(1:14);
@@ -164,7 +164,32 @@ classdef measurementClass
             c5 = bin2dec(codeword2(5:8));
             c6 = bin2dec(codeword2(9:12));
             c7 = bin2dec(codeword2(13:14));
-        
+            
+            switch MODE
+                case 2
+                    [c4, c5] = conversionClass.swap(c4, c5);
+                case 3
+                    [c4, c6] = conversionClass.swap(c4, c6);
+                case 4
+                    [c0, c1] = conversionClass.swap(c0, c1);
+                case 5
+                    [c0, c1] = conversionClass.swap(c0, c1);
+                    [c4, c5] = conversionClass.swap(c4, c5);
+                case 6
+                    [c0, c1] = conversionClass.swap(c0, c1);
+                    [c4, c6] = conversionClass.swap(c4, c6);
+                case 7
+                    [c0, c2] = conversionClass.swap(c0, c2);
+                case 8
+                    [c0, c2] = conversionClass.swap(c0, c2);
+                    [c4, c5] = conversionClass.swap(c4, c5);
+                case 9
+                    [c0, c2] = conversionClass.swap(c0, c2);
+                    [c4, c6] = conversionClass.swap(c4, c6);
+                otherwise
+            end
+
+
             if (c1 == 0) && (c2 == 0)
                 index1 = c0;
             elseif (c1 == 15) && (c2 == 0)
@@ -172,7 +197,7 @@ classdef measurementClass
             elseif (c1 == 15) && (c2 == 15)
                 index1 = c0 + 32;
             end
-        
+
             if c3 == 2
                 index1 = index1 + 48;
             end
@@ -188,10 +213,17 @@ classdef measurementClass
             if c7 == 2
                 index2 = index2 + 48;
             end
-        
-            index = index1 + 1 + (index2 * 95);
-        
-            reading = simulation_data(index, 1) * magnitude_scaling_factor;
+            
+
+            switch MODE
+                case 1
+                    index = index1 + 1 + (index2 * 95);
+                    reading = simulation_data_mode1(index, 1) * magnitude_scaling_factor;
+                case 2
+                    index = index1 + 1 + (index2 * 96);
+                    reading = simulation_data_mode2(index, 1) * magnitude_scaling_factor;
+                otherwise
+            end
         end
         
         
@@ -257,18 +289,12 @@ classdef measurementClass
         function double_filtered_points = filter_measurements(current_measured_points)
         global filter_tolerance
         
-            distance = zeros(size(current_measured_points, 1), 1);
-            for k = 1:1:size(current_measured_points, 1)
-                distance(k, 1) = abs(current_measured_points(k, 1) - conversionClass.polar2cartesian(current_measured_points(k, 2), current_measured_points(k, 3)));
-            end
         
-            % points = current_measured_points(:, 1);
-            % center = mean(points);
-            % distance = abs(points - center);
+            mean_data = mean(current_measured_points(:, 1), "all");
+            center_distance = abs(current_measured_points(:, 1) - mean_data);
+            mean_distance = mean(center_distance, "all");
         
-            mean_distance = mean(distance, "all");
-        
-            outlier_indexes = find(distance > filter_tolerance * mean_distance);
+            outlier_indexes = find(center_distance > filter_tolerance * mean_distance);
         
             filtered_points = zeros(size(current_measured_points, 1) - size(outlier_indexes, 1), 3);
         
@@ -281,12 +307,20 @@ classdef measurementClass
                 end
             end
         
+
+
+            distance = zeros(size(filtered_points, 1), 1);
+            for k = 1:1:size(filtered_points, 1)
+                distance(k, 1) = abs(filtered_points(k, 1) - conversionClass.polar2cartesian(filtered_points(k, 2), filtered_points(k, 3)));
+            end
         
-            mean_data = mean(filtered_points(:, 1), "all");
-            center_distance = abs(filtered_points(:, 1) - mean_data);
-            mean_distance = mean(center_distance, "all");
+            % points = current_measured_points(:, 1);
+            % center = mean(points);
+            % distance = abs(points - center);
         
-            double_outlier_indexes = find(center_distance > filter_tolerance * mean_distance);
+            mean_distance = mean(distance, "all");
+        
+            double_outlier_indexes = find(distance > filter_tolerance* 1.4 * mean_distance);
         
             double_filtered_points = zeros(size(filtered_points, 1) - size(double_outlier_indexes, 1), 3);
         
@@ -298,7 +332,7 @@ classdef measurementClass
                     j = j + 1;
                 end
             end
-        
+
             % plot(current_measured_points(:, 1), "O");
             % hold on
             % plot(filtered_points(:, 1), "X");
