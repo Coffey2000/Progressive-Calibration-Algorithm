@@ -70,12 +70,15 @@ classdef conversionClass
 
 
         
-        function codeword = polar2code(gain, phase, MODE)
+        function codeword = polar2code(gain, phase, MODE, SOLUTION)
         global DC_offset phase1_offset phase2_offset magnitude_scaling_factor
         
         uncompensated_target_point = conversionClass.polar2cartesian(gain, phase);
         target_point = measurementClass.DC_offset_compensation(uncompensated_target_point, DC_offset, magnitude_scaling_factor);
         [uncompensated_vector1_phase, uncompensated_vector2_phase] = conversionClass.cartesian2phases(target_point);
+        if SOLUTION == 2
+            [uncompensated_vector1_phase, uncompensated_vector2_phase] = conversionClass.swap(uncompensated_vector1_phase, uncompensated_vector2_phase);
+        end
         [vector1_phase, vector2_phase] = measurementClass.phase_offset_compensation(uncompensated_vector1_phase, uncompensated_vector2_phase, phase1_offset, phase2_offset);
         
         % plot(L1*cos(vector1_phase) + L2*cos(vector2_phase) + 1i*L1*sin(vector1_phase) + 1i*L2*sin(vector2_phase), 'o');

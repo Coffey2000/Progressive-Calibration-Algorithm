@@ -1,7 +1,7 @@
 global DC_offset L1 L2 phase1_offset phase2_offset num_target_gain_states num_target_phase_states num_RTPS_gain_states num_RTPS_phase_states Measurements Mapping Current_Calibration_Gain_Index Current_Calibration_Phase_Index target_gain_states ...
     target_phase_states RTPS_gain_states RTPS_phase_states num_MODES phase_error_criteria kernel_size target_phase_resolution RTPS_phase_resolution S_dd21 simulation_data_mode1 magnitude_scaling_factor last_phase1_error last_phase2_error target_gain_resolution_dB ...
     RTPS_gain_resolution_dB lowest_detectable_gain_dB lowest_detectable_gain target_gain_states_dB phase_error_history RTPS_gain_resolution Selected_Measurements Current_Point_Iteration_Count original_kernel_size filter_tolerance Starting_Gain_Index Ending_Gain_Index...
-    measurement_counter total_measurement_counter simulation_data_mode2 original_RTPS_phase_resolution original_RTPS_gain_resolution
+    measurement_counter total_measurement_counter simulation_data_mode2 simulation_data_mode3 original_RTPS_phase_resolution original_RTPS_gain_resolution
 
 
 %%
@@ -19,6 +19,7 @@ filter_tolerance = 1;
 % load("./RTPSdata/sp/Sp.mat", "S_dd21");
 load("simulation_data_mode1.mat");
 load("simulation_data_mode2.mat");
+load("simulation_data_mode3.mat");
 %load('gain_resolution.mat');
 
 DC_offset = 0;
@@ -50,7 +51,7 @@ phase_error_history = zeros(2, 4);
 
 phase_error_criteria = RTPS_phase_resolution;
 
-num_MODES = 9;
+num_MODES = 3;
 
 original_kernel_size = kernel_size;
 original_RTPS_phase_resolution = RTPS_phase_resolution;
@@ -139,7 +140,18 @@ while (next_state ~= "Finish Calibration")
     present_state = next_state;
     
     num_next_measurements = size(next_measurements, 1);
-    if num_next_measurements ~= 0
+    if present_state == "Fine Tune Current Point"
+        current_measured_points = zeros(num_MODES*2, 4);
+        for i = 1:1:num_MODES
+            current_measured_points(2*i - 1, 1) = measurementClass.measure(next_measurements, next_choice, i, 1);
+            current_measured_points(2*i - 1, 2:(end-1)) = next_measurements;
+            current_measured_points(2*i - 1, end) = 1;
+
+            current_measured_points(2*i, 1) = measurementClass.measure(next_measurements, next_choice, i, 2);
+            current_measured_points(2*i, 2:(end-1)) = next_measurements;
+            current_measured_points(2*i, end) = 2;
+        end
+    elseif num_next_measurements ~= 0
 
         % if (next_choice == "cartesian") || (next_choice == "")
         %      current_measured_points = zeros(num_next_measurements, 2);
@@ -153,24 +165,28 @@ while (next_state ~= "Finish Calibration")
         % end
 
         if (next_choice == "cartesian") || (next_choice == "")
-             current_measured_points = zeros(num_next_measurements*2, 2);
-        elseif next_choice == "polar"
              current_measured_points = zeros(num_next_measurements*2, 3);
+        elseif next_choice == "polar"
+             current_measured_points = zeros(num_next_measurements*2, 4);
         else
-            current_measured_points = zeros(num_next_measurements, 3);
+            current_measured_points = zeros(num_next_measurements, 4);
         end
         
         if next_choice == "phases"
             for i = 1:1:num_next_measurements
-                current_measured_points(i, 1) = measurementClass.measure(next_measurements(i, :), next_choice, 2, 1);
-                current_measured_points(i, 2:end) = next_measurements(i, :);
+                current_measured_points(i, 1) = measurementClass.measure(next_measurements(i, :), next_choice, 1, 1);
+                current_measured_points(i, 2:(end-1)) = next_measurements(i, :);
+                current_measured_points(i, end) = 1;
             end
         else
             for i = 1:1:num_next_measurements
-                current_measured_points(2*i - 1, 1) = measurementClass.measure(next_measurements(i, :), next_choice, 2, 1);
-                current_measured_points(2*i, 1) = measurementClass.measure(next_measurements(i, :), next_choice, 2, 2);
-                current_measured_points(2*i - 1, 2:end) = next_measurements(i, :);
-                current_measured_points(2*i, 2:end) = next_measurements(i, :);
+                current_measured_points(2*i - 1, 1) = measurementClass.measure(next_measurements(i, :), next_choice, 1, 1);
+                current_measured_points(2*i - 1, 2:(end-1)) = next_measurements(i, :);
+                current_measured_points(2*i - 1, end) = 1;
+
+                current_measured_points(2*i, 1) = measurementClass.measure(next_measurements(i, :), next_choice, 1, 2);
+                current_measured_points(2*i, 2:(end-1)) = next_measurements(i, :);
+                current_measured_points(2*i, end) = 2;
             end
         end
     end
@@ -330,7 +346,7 @@ switch present_state
 
         if abs(phase1_error) < phase_error_criteria && abs(phase2_error) < phase_error_criteria
 
-            Mapping(Current_Calibration_Gain_Index, Current_Calibration_Phase_Index) = conversionClass.polar2code(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index), 1);
+            %Mapping(Current_Calibration_Gain_Index, Current_Calibration_Phase_Index) = conversionClass.polar2code(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index), 1);
 
             next_state = "Next Target Point";
             %Current_Calibration_Phase_Index = Current_Calibration_Phase_Index + 1;
@@ -429,38 +445,15 @@ switch present_state
 
             plot(conversionClass.polar2cartesian(closest_measured_point(1, 2), closest_measured_point(1, 3)), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", "r");
             hold on
-            Selected_Measurements(Current_Calibration_Gain_Index, Current_Calibration_Phase_Index) = closest_measured_point(1, 1);
-            plot(closest_measured_point(1, 1), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", "g");
+            plot(closest_measured_point(1, 1), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0.9290, 0.6940, 0.1250]);
             xlim([-1*(target_gain_states(Current_Calibration_Gain_Index)+0.1) target_gain_states(Current_Calibration_Gain_Index)+0.1]);
             ylim([-1*(target_gain_states(Current_Calibration_Gain_Index)+0.1) target_gain_states(Current_Calibration_Gain_Index)+0.1]);
             drawnow
-            hold off
-            Mapping(Current_Calibration_Gain_Index, Current_Calibration_Phase_Index) = conversionClass.polar2code(closest_measured_point(2), closest_measured_point(3), 1);
+            hold on
             
-            if Current_Calibration_Phase_Index == num_target_phase_states
-
-                circle_report();
-
-                if Current_Calibration_Gain_Index == Ending_Gain_Index
-                    next_state = "Finish Calibration";
-                    next_measurements = [];
-                    next_choice = "";
-                else
-                    Current_Calibration_Gain_Index = Current_Calibration_Gain_Index + 1;
-                    Current_Calibration_Phase_Index = 1;
-                    
-                    next_state = "Phase Offset Calibration";
-                    next_measurements(1, 1) = target_gain_states(Current_Calibration_Gain_Index);
-                    next_measurements(1, 2) = target_phase_states(Current_Calibration_Phase_Index);
-                    next_choice = "polar";
-                end
-            else
-
-                next_state = "Next Target Point";
-                Current_Calibration_Phase_Index = Current_Calibration_Phase_Index + 1;
-                next_measurements = next_kernel();
-                next_choice = "polar";
-            end
+            next_state = "Fine Tune Current Point";
+            next_measurements = [closest_measured_point(1, 2) closest_measured_point(1, 3)];
+            next_choice = "polar";
         else
             hold off
 
@@ -481,14 +474,65 @@ switch present_state
 
             next_measurements = next_supporting_kernel(filtered_measurements);
             next_choice = "polar";
+
+            plot(conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index))+0.000001*1i, "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0 0.4470 0.7410]);
+            hold on
+            plot_gain_circle(target_gain_states(Current_Calibration_Gain_Index));
+            measurementClass.plot_measurements(next_measurements, "polar");
+        end
+
+
+
+
+
+
+
+    case "Fine Tune Current Point"
+
+        closest_measured_point = find_closest_measurement(current_measured_points);
+        selected_MODE_inter = find(current_measured_points(:, 1) == closest_measured_point(1));
+        selected_MODE = ceil(selected_MODE_inter(1, 1)/2);
+
+        plot(current_measured_points(:, 1), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0.9290, 0.6940, 0.1250]);
+        hold on
+        plot(closest_measured_point(1, 1), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", "g");
+        xlim([-1*(target_gain_states(Current_Calibration_Gain_Index)+0.1) target_gain_states(Current_Calibration_Gain_Index)+0.1]);
+        ylim([-1*(target_gain_states(Current_Calibration_Gain_Index)+0.1) target_gain_states(Current_Calibration_Gain_Index)+0.1]);
+        drawnow
+        hold off
+
+        Selected_Measurements(Current_Calibration_Gain_Index, Current_Calibration_Phase_Index) = closest_measured_point(1, 1);
+        Mapping(Current_Calibration_Gain_Index, Current_Calibration_Phase_Index) = conversionClass.polar2code(closest_measured_point(2), closest_measured_point(3), selected_MODE, closest_measured_point(end));
+        
+        if Current_Calibration_Phase_Index == num_target_phase_states
+
+            circle_report();
+
+            if Current_Calibration_Gain_Index == Ending_Gain_Index
+                next_state = "Finish Calibration";
+                next_measurements = [];
+                next_choice = "";
+            else
+                Current_Calibration_Gain_Index = Current_Calibration_Gain_Index + 1;
+                Current_Calibration_Phase_Index = 1;
+                
+                next_state = "Phase Offset Calibration";
+                next_measurements(1, 1) = target_gain_states(Current_Calibration_Gain_Index);
+                next_measurements(1, 2) = target_phase_states(Current_Calibration_Phase_Index);
+                next_choice = "polar";
+            end
+        else
+
+            next_state = "Next Target Point";
+            Current_Calibration_Phase_Index = Current_Calibration_Phase_Index + 1;
+            next_measurements = next_kernel();
+            next_choice = "polar";
         end
 
         plot(conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index))+0.000001*1i, "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0 0.4470 0.7410]);
         hold on
         plot_gain_circle(target_gain_states(Current_Calibration_Gain_Index));
         measurementClass.plot_measurements(next_measurements, "polar");
-
-
     otherwise
 end
 
