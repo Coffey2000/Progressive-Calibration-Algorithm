@@ -8,7 +8,7 @@ global DC_offset L1 L2 phase1_offset phase2_offset num_target_gain_states num_ta
 kernel_size = 5;
 lowest_detectable_gain_dB = -8;
 
-Starting_Gain_Index = 5;
+Starting_Gain_Index = 1;
 Ending_Gain_Index = 8;
 
 filter_tolerance = 1;
@@ -29,7 +29,7 @@ L1 = 0.5;
 L2 = 0.5;
 magnitude_scaling_factor = 1;
 
-lowest_detectable_gain = 10^(lowest_detectable_gain_dB/10);
+lowest_detectable_gain = 10^(lowest_detectable_gain_dB/20);
 
 target_gain_resolution_dB = 1;
 RTPS_gain_resolution_dB = 0.5;
@@ -64,11 +64,11 @@ Mapping = zeros(num_target_gain_states, num_target_phase_states);
 Selected_Measurements = zeros(num_target_gain_states, num_target_phase_states);
 
 target_gain_states_dB = linspace(-1*(num_target_gain_states - 1), 0, num_target_gain_states);
-target_gain_states = 10.^(target_gain_states_dB./10);
+target_gain_states = 10.^(target_gain_states_dB./20);
 target_phase_states = linspace(0, 2*pi - target_phase_resolution, num_target_phase_states);
 
 RTPS_gain_states_dB = linspace(-1*(num_target_gain_states - 1), 0, num_RTPS_gain_states);
-RTPS_gain_states = 10.^(RTPS_gain_states_dB./10);
+RTPS_gain_states = 10.^(RTPS_gain_states_dB./20);
 RTPS_phase_states = linspace(0, 2*pi - RTPS_phase_resolution, num_RTPS_phase_states);
 
 Current_Calibration_Gain_Index = Starting_Gain_Index;
@@ -123,6 +123,8 @@ total_measurement_counter = 0;
 % sweep_reading_ang = angle(sweep_reading)*180/pi;
 
 %plot(simulation_data(1:95, 1), "o");
+
+
 
 figure;
 set(gcf, 'Position',  [900, 300, 1000, 800]);
@@ -620,7 +622,7 @@ for gain = 1:1:kernel_size
         next_gain = target_gain_states(Current_Calibration_Gain_Index) + RTPS_gain_resolution * (gain - (kernel_size + 1)/2);
         next_angle = conversionClass.wrap22pi(target_phase_states(Current_Calibration_Phase_Index) + RTPS_phase_resolution/2 * (angle - (kernel_size + 1)/2));
         
-        if (next_gain >= lowest_detectable_gain) && (next_gain <= 1) && (next_angle >= 0) && (next_angle <= 2*pi)
+        if (next_gain >= lowest_detectable_gain/2) && (next_gain <= 1) && (next_angle >= 0) && (next_angle <= 2*pi)
             k = k + 1;
         end
     end
@@ -636,7 +638,7 @@ for gain = 1:1:kernel_size
         next_gain = target_gain_states(Current_Calibration_Gain_Index) + RTPS_gain_resolution * (gain - (kernel_size + 1)/2);
         next_angle = conversionClass.wrap22pi(target_phase_states(Current_Calibration_Phase_Index) + RTPS_phase_resolution/2 * (angle - (kernel_size + 1)/2));
         
-        if (next_gain >= lowest_detectable_gain) && (next_gain <= 1) && (next_angle >= 0) && (next_angle <= 2*pi)
+        if (next_gain >= lowest_detectable_gain/2) && (next_gain <= 1) && (next_angle >= 0) && (next_angle <= 2*pi)
             %next_polar(k, 1) = 10^(next_gain_dB/10);
             next_polar(k, 1) = next_gain;
             next_polar(k, 2) = next_angle;
@@ -701,7 +703,7 @@ global Current_Calibration_Gain_Index Current_Calibration_Phase_Index kernel_siz
             next_angle = conversionClass.wrap22pi(new_target_phase + RTPS_phase_resolution/2 * (angle - (kernel_size + 1)/2));
 
             
-            if (next_gain >= lowest_detectable_gain) && (next_gain <= 1) && (next_angle >= 0) && (next_angle <= 2*pi)
+            if (next_gain >= lowest_detectable_gain/2) && (next_gain <= 1) && (next_angle >= 0) && (next_angle <= 2*pi)
                 k = k + 1;
             end
         end
@@ -718,7 +720,7 @@ global Current_Calibration_Gain_Index Current_Calibration_Phase_Index kernel_siz
             next_angle = conversionClass.wrap22pi(new_target_phase + RTPS_phase_resolution/2 * (angle - (kernel_size + 1)/2));
 
             
-            if (next_gain >= lowest_detectable_gain) && (next_gain <= 1) && (next_angle >= 0) && (next_angle <= 2*pi)
+            if (next_gain >= lowest_detectable_gain/2) && (next_gain <= 1) && (next_angle >= 0) && (next_angle <= 2*pi)
                 %next_polar(k, 1) = 10^(next_gain_dB/10);
                 next_polar(k, 1) = next_gain;
                 next_polar(k, 2) = next_angle;
@@ -781,8 +783,8 @@ L = (L1 + L2)/2;
 for i = 1:1:num_RTPS_phase_states
     for j = 1:1:num_RTPS_phase_states
      data((i-1)*num_RTPS_phase_states + j) = L*cos(RTPS_phase_states(i)) + L*cos(RTPS_phase_states(j)) + 1i*(L*sin(RTPS_phase_states(i)) + L*sin(RTPS_phase_states(j)));
-%      plot(data((i-1)*num_RTPS_phase_states + j), "O");
-%      hold on
+     % plot(data((i-1)*num_RTPS_phase_states + j), "O");
+     % hold on
     end
 end
 % hold off
