@@ -2,15 +2,15 @@ global num_target_gain_states num_target_phase_states Measurements Mapping Curre
     target_phase_states  phase_error_criteria kernel_size target_phase_resolution RTPS_phase_resolution ...
      lowest_detectable_gain_dB  target_gain_states_dB phase_error_history RTPS_gain_resolution Selected_Measurements Current_Point_Iteration_Count original_kernel_size filter_tolerance Starting_Gain_Index Ending_Gain_Index...
     measurement_counter original_RTPS_gain_resolution num_actual_gain_states num_actual_phase_states gain_profile max_gain_measurement max_target_gain ...
-     phase_offset target_gain_states_dB_normalized actual_phase_resolution actual_phase_states min_target_gain channel1_S21_38r5GHz total_measurement_counter
+     phase_offset target_gain_states_dB_normalized actual_phase_resolution actual_phase_states min_target_gain channel1_S21_38r5GHz total_measurement_counter kernel_offset
 
 
 %%
-kernel_size = 5;
+kernel_size = 1;
 lowest_detectable_gain_dB = -8;
 
 Starting_Gain_Index = 1;
-Ending_Gain_Index = 10;
+Ending_Gain_Index = 9;
 
 filter_tolerance = 1;
 
@@ -27,14 +27,13 @@ max_gain_measurement = zeros(num_actual_phase_states, 1);
 max_target_gain = 0;
 
 phase_offset = 0;
+kernel_offset = 0;
 
 num_target_gain_states = 10;
 num_target_phase_states = 64;
 
 num_actual_gain_states = 256;
 num_actual_phase_states = 256;
-
-last_phase_error = 0;
 
 target_phase_resolution = 2*pi/num_target_phase_states;
 actual_phase_resolution = 2*pi/num_actual_phase_states;
@@ -45,8 +44,6 @@ phase_error_criteria = actual_phase_resolution;
 
 
 original_kernel_size = kernel_size;
-original_RTPS_phase_resolution = RTPS_phase_resolution;
-original_RTPS_gain_resolution = RTPS_gain_resolution;
 
 Measurements = zeros(num_actual_phase_states, num_actual_phase_states) + 1234;
 %Measurements_code = zeros(2, num_RTPS_phase_states^2*num_MODES);
@@ -143,7 +140,7 @@ function [next_measurements, next_choice, next_state] = Calibration_FSM(current_
 global phase_offset num_target_phase_states Mapping Current_Calibration_Gain_Index Current_Calibration_Phase_Index target_gain_states ...
     target_phase_states phase_error_criteria phase_error_history Selected_Measurements Current_Point_Iteration_Count kernel_size original_kernel_size Starting_Gain_Index Ending_Gain_Index...
     num_actual_gain_states num_actual_phase_states gain_profile max_gain_measurement max_target_gain ...
-    target_gain_states_dB_normalized target_gain_states_dB min_target_gain actual_gain_resolution
+    target_gain_states_dB_normalized target_gain_states_dB min_target_gain actual_gain_resolution kernel_offset measurement_counter
 
 % next_phases is a N by 2 matrix where N is the number of phases to measured next and the 2 columns are phase 1 and phase 2.
 % current_measured_points is a N by 1 vector where N is the number of points in the current measurements.
@@ -192,6 +189,12 @@ switch present_state
         end
 
         hold off
+
+        disp(" ");
+        disp("Characterization Finish");
+        disp("Number of new measurements: " + measurement_counter);
+    
+        measurement_counter = 0;
 
         next_state = "Phase Offset Calibration";
 
@@ -311,7 +314,12 @@ switch present_state
             valid = measurementClass.measurement_validation(filtered_measurements(:, 1));
         end
 
+        % if Current_Point_Iteration_Count > 10
+        %     valid = 1;
+        % end
+
         if valid
+            kernel_offset = 0;
             Current_Point_Iteration_Count = 0;
             kernel_size = original_kernel_size;
             % RTPS_phase_resolution = original_RTPS_phase_resolution;
@@ -367,12 +375,12 @@ switch present_state
 
             next_state = "Next Target Point";
 
-            if Current_Point_Iteration_Count > 4
-                kernel_size = kernel_size + 4;
-                % kernel_size = kernel_size*4 + 1;
-                % RTPS_phase_resolution = RTPS_phase_resolution/1.5;
-                % RTPS_gain_resolution = RTPS_gain_resolution/1.5;
-                Current_Point_Iteration_Count = 0;
+            if Current_Point_Iteration_Count > 10
+                 kernel_size = kernel_size + 4;
+                 % kernel_size = kernel_size*4 + 1;
+                 % RTPS_phase_resolution = RTPS_phase_resolution/1.5;
+                 % RTPS_gain_resolution = RTPS_gain_resolution/1.5;
+                 Current_Point_Iteration_Count = 0;
             end
 
             next_measurements = next_supporting_kernel(filtered_measurements);
@@ -387,55 +395,6 @@ switch present_state
 
 
 
-
-
-
-    case "Fine Tune Current Point"
-
-        closest_measured_point = find_closest_measurement(current_measured_points);
-        selected_MODE_inter = find(current_measured_points(:, 1) == closest_measured_point(1));
-        selected_MODE = ceil(selected_MODE_inter(1, 1)/2);
-
-        plot(current_measured_points(:, 1), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0.9290, 0.6940, 0.1250]);
-        hold on
-        plot(closest_measured_point(1, 1), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", "g");
-        xlim([-1*(target_gain_states(Current_Calibration_Gain_Index)+0.1) target_gain_states(Current_Calibration_Gain_Index)+0.1]);
-        ylim([-1*(target_gain_states(Current_Calibration_Gain_Index)+0.1) target_gain_states(Current_Calibration_Gain_Index)+0.1]);
-        drawnow
-        hold off
-
-        Selected_Measurements(Current_Calibration_Gain_Index, Current_Calibration_Phase_Index) = closest_measured_point(1, 1);
-        Mapping(Current_Calibration_Gain_Index, Current_Calibration_Phase_Index) = conversionClass.polar2code(closest_measured_point(2), closest_measured_point(3), selected_MODE, closest_measured_point(end));
-        
-        if Current_Calibration_Phase_Index == num_target_phase_states
-
-            circle_report();
-
-            if Current_Calibration_Gain_Index == Ending_Gain_Index
-                next_state = "Finish Calibration";
-                next_measurements = [];
-                next_choice = "";
-            else
-                Current_Calibration_Gain_Index = Current_Calibration_Gain_Index + 1;
-                Current_Calibration_Phase_Index = 1;
-                
-                next_state = "Phase Offset Calibration";
-                next_measurements(1, 1) = target_gain_states(Current_Calibration_Gain_Index);
-                next_measurements(1, 2) = target_phase_states(Current_Calibration_Phase_Index);
-                next_choice = "polar";
-            end
-        else
-
-            next_state = "Next Target Point";
-            Current_Calibration_Phase_Index = Current_Calibration_Phase_Index + 1;
-            next_measurements = next_kernel();
-            next_choice = "polar";
-        end
-
-        plot(conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index))+0.000001*1i, "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0 0.4470 0.7410]);
-        hold on
-        plot_gain_circle(target_gain_states(Current_Calibration_Gain_Index));
-        measurementClass.plot_measurements(next_measurements, "polar");
     otherwise
 end
 
@@ -547,20 +506,24 @@ end
 
 function next_polar = next_supporting_kernel(filtered_measurements)
 global Current_Calibration_Gain_Index Current_Calibration_Phase_Index kernel_size actual_phase_resolution target_gain_states ...
-    target_phase_states actual_gain_resolution min_target_gain max_target_gain
-    
+    target_phase_states actual_gain_resolution min_target_gain max_target_gain kernel_offset
+
     error_vector_sum = 0;
 
+    ideal_kernel = next_kernel();
+
     for k = 1:1:size(filtered_measurements, 1)
-        error_vector_sum = error_vector_sum + filtered_measurements(k, 1) - conversionClass.polar2cartesian(filtered_measurements(k, 2), filtered_measurements(k, 3));
+        error_vector_sum = error_vector_sum + filtered_measurements(k, 1) - conversionClass.polar2cartesian(ideal_kernel(k, 1), ideal_kernel(k, 2));
     end
 
     average_error_vector = error_vector_sum/size(filtered_measurements, 1);
 
-    new_target_point = conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index)) - average_error_vector;
+    kernel_offset = kernel_offset + average_error_vector;
+
+    new_target_point = conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index)) - kernel_offset;
 
     [new_target_gain, new_target_phase] = conversionClass.cartesian2polar(new_target_point);
-    
+
     k = 0;
     for gain = 1:1:kernel_size
         for angle = 1:1:kernel_size
@@ -572,10 +535,10 @@ global Current_Calibration_Gain_Index Current_Calibration_Phase_Index kernel_siz
             end
         end
     end
-    
+
     next_polar = zeros(k, 2);
-    
-    
+
+
     k = 1;
     for gain = 1:1:kernel_size
         for angle = 1:1:kernel_size
@@ -594,6 +557,55 @@ end
 
 
 
+
+
+
+% function next_polar = next_supporting_kernel(filtered_measurements)
+% global Current_Calibration_Gain_Index Current_Calibration_Phase_Index kernel_size actual_phase_resolution target_gain_states ...
+%     target_phase_states actual_gain_resolution min_target_gain max_target_gain
+% 
+%     error_vector_sum = 0;
+% 
+%     for k = 1:1:size(filtered_measurements, 1)
+%         error_vector_sum = error_vector_sum + filtered_measurements(k, 1) - conversionClass.polar2cartesian(filtered_measurements(k, 2), filtered_measurements(k, 3));
+%     end
+% 
+%     average_error_vector = error_vector_sum/size(filtered_measurements, 1);
+% 
+%     new_target_point = conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index)) - average_error_vector;
+% 
+%     [new_target_gain, new_target_phase] = conversionClass.cartesian2polar(new_target_point);
+% 
+%     k = 0;
+%     for gain = 1:1:kernel_size
+%         for angle = 1:1:kernel_size
+%             next_gain = new_target_gain + actual_gain_resolution * (gain - (kernel_size + 1)/2);
+%             next_angle = conversionClass.wrap22pi(new_target_phase + actual_phase_resolution * (angle - (kernel_size + 1)/2));
+% 
+%             if (next_gain >= min_target_gain/2) && (next_gain <= max_target_gain + 2*kernel_size*actual_gain_resolution) && (next_angle >= 0) && (next_angle <= 2*pi)
+%                 k = k + 1;
+%             end
+%         end
+%     end
+% 
+%     next_polar = zeros(k, 2);
+% 
+% 
+%     k = 1;
+%     for gain = 1:1:kernel_size
+%         for angle = 1:1:kernel_size
+%             next_gain = new_target_gain + actual_gain_resolution * (gain - (kernel_size + 1)/2);
+%             next_angle = conversionClass.wrap22pi(new_target_phase + actual_phase_resolution * (angle - (kernel_size + 1)/2));
+% 
+%             if (next_gain >= min_target_gain/2) && (next_gain <= max_target_gain + 2*kernel_size*actual_gain_resolution) && (next_angle >= 0) && (next_angle <= 2*pi)
+%                 next_polar(k, 1) = next_gain;
+%                 next_polar(k, 2) = next_angle;
+%                 k = k + 1;
+%             end
+%         end
+%     end
+% 
+% end
 
 
 
@@ -642,5 +654,5 @@ function criteria = distance_error_criteria()
 global actual_phase_resolution actual_gain_resolution target_gain_states Current_Calibration_Gain_Index
 
 phase_variation = abs(conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), 1) - conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), 1 + actual_phase_resolution));
-criteria = min(phase_variation, actual_gain_resolution)*2;
+criteria = min(phase_variation, actual_gain_resolution)*3;
 end
