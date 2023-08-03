@@ -44,8 +44,10 @@ classdef conversionClass
             scaled_vector2_profile(1:9, 2) = scaled_vector2_profile(1:9, 2)*vector2Length_scaling_minus;
             scaled_vector2_profile(11:20, 2) = scaled_vector2_profile(11:20, 2)*vector2Length_scaling_plus;
 
-            vector1_index = round(interp1(scaled_vector1_profile(:, 2), scaled_vector1_profile(:, 1), L1)) + reference_index(1);
-            vector2_index = round(interp1(scaled_vector2_profile(:, 2), scaled_vector2_profile(:, 1), L2)) + reference_index(2);
+            % vector1_index = round(interp1(scaled_vector1_profile(:, 2), scaled_vector1_profile(:, 1), L1)) + reference_index(1);
+            % vector2_index = round(interp1(scaled_vector2_profile(:, 2), scaled_vector2_profile(:, 1), L2)) + reference_index(2);
+            vector1_index = round(interp1(scaled_vector1_profile(:, 2), scaled_vector1_profile(:, 1), L1));
+            vector2_index = round(interp1(scaled_vector2_profile(:, 2), scaled_vector2_profile(:, 1), L2));
         end
 
 

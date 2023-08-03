@@ -222,13 +222,15 @@ switch present_state
             vector2_profile(i, 2) = abs(vector2_profile(i, 2) - first_point);
         end
 
-        vector1_profile(:, 1) = vector1_profile(:, 1) - reference_index(1);
-        index = vector1_profile(:, 1) == 0;
+        %vector1_profile(:, 1) = vector1_profile(:, 1) - reference_index(1);
+        % index = vector1_profile(:, 1) == 0;
+        index = vector1_profile(:, 1) == reference_index(1);
         reference_vectorLength1 = vector1_profile(index, 2);
         vector1_profile(:, 2) = vector1_profile(:, 2) - reference_vectorLength1;
 
-        vector2_profile(:, 1) = vector2_profile(:, 1) - reference_index(2);
-        index = vector2_profile(:, 1) == 0;
+        %vector2_profile(:, 1) = vector2_profile(:, 1) - reference_index(2);
+        % index = vector2_profile(:, 1) == 0;
+        index = vector2_profile(:, 1) == reference_index(2);
         reference_vectorLength2 = vector2_profile(index, 2);
         vector2_profile(:, 2) = vector2_profile(:, 2) - reference_vectorLength2;
         
@@ -240,10 +242,14 @@ switch present_state
         [vector1_envelop_profile(i, 3), vector1_envelop_profile(i, 4)] = conversionClass.cartesian2vectors(current_measured_points(101+i, 1) - reference_point);
         end
 
-        % figure
-        % plot(vector1_profile(:, 1), vector1_profile(:, 2))
-
-
+        figure
+        plot(vector1_envelop_profile(:, 2), vector1_envelop_profile(:, 1))
+        figure
+        plot(vector1_envelop_profile(:, 4), vector1_envelop_profile(:, 3))
+        figure
+        plot(vector2_envelop_profile(:, 1), vector2_envelop_profile(:, 2))
+        figure
+        plot(vector2_envelop_profile(:, 3), vector2_envelop_profile(:, 4))
 
         max_gain_measurement = abs(current_measured_points(42:121, 1));
         max_target_gain = min(max_gain_measurement);
