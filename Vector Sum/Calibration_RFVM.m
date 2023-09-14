@@ -3,7 +3,13 @@ global num_target_gain_states num_target_phase_states Measurements Mapping Curre
      lowest_detectable_gain_dB  target_gain_states_dB phase_error_history Selected_Measurements Current_Point_Iteration_Count original_kernel_size filter_tolerance Starting_Gain_Index Ending_Gain_Index...
     measurement_counter num_actual_vector_states num_actual_phase_states gain_profile max_gain_measurement max_target_gain ...
      phase_offset target_gain_states_dB_normalized actual_phase_resolution actual_phase_states min_target_gain total_measurement_counter kernel_offset theta1 theta2 rfvm_40GHz_table vector1_profile vector2_profile phase_reference...
-     vector1_envelop_profile vector2_envelop_profile phase_error_sum gain_error_sum
+     vector1_envelop_profile vector2_envelop_profile phase_error_sum gain_error_sum VALIDATION num_hit total_num_hit
+
+%%
+VALIDATION = 1;
+num_hit = 0;
+total_num_hit = 0;
+
 
 
 %%
@@ -11,7 +17,7 @@ kernel_size = 1;
 lowest_detectable_gain_dB = -8;
 
 Starting_Gain_Index = 1;
-Ending_Gain_Index = 7;
+Ending_Gain_Index = 12;
 
 filter_tolerance = 1.2;
 
@@ -45,7 +51,7 @@ max_target_gain = 0;
 phase_offset = 0;
 kernel_offset = 0;
 
-num_target_gain_states = 10;
+num_target_gain_states = 12;
 num_target_phase_states = 64;
 
 num_actual_vector_states = 64;
@@ -67,9 +73,9 @@ Mapping = zeros(num_target_gain_states, num_target_phase_states);
 
 Selected_Measurements = zeros(num_target_gain_states, num_target_phase_states);
 
-target_gain_states_dB_normalized = linspace(-9, 0, 10);
-target_gain_states_dB = zeros(1, 10);
-target_gain_states = zeros(1, 10);
+target_gain_states_dB_normalized = linspace(-1*num_target_gain_states + 1, 0, num_target_gain_states);
+target_gain_states_dB = zeros(1, num_target_gain_states);
+target_gain_states = zeros(1, num_target_gain_states);
 
 target_phase_states = linspace(0, 2*pi - target_phase_resolution, num_target_phase_states);
 
@@ -157,7 +163,7 @@ global phase_offset num_target_phase_states Mapping Current_Calibration_Gain_Ind
     target_phase_states phase_error_criteria phase_error_history Selected_Measurements Current_Point_Iteration_Count kernel_size original_kernel_size Starting_Gain_Index Ending_Gain_Index...
     num_actual_gain_states num_actual_phase_states gain_profile max_gain_measurement max_target_gain ...
     target_gain_states_dB_normalized target_gain_states_dB actual_gain_resolution kernel_offset measurement_counter num_actual_vector_states vector1_profile vector2_profile...
-    theta1 theta2 reference_index reference_point vector1_envelop_profile vector2_envelop_profile max_gain min_gain
+    theta1 theta2 reference_index reference_point vector1_envelop_profile vector2_envelop_profile max_gain min_gain VALIDATION num_hit total_num_hit num_target_gain_states
 
 % next_phases is a N by 2 matrix where N is the number of phases to measured next and the 2 columns are phase 1 and phase 2.
 % current_measured_points is a N by 1 vector where N is the number of points in the current measurements.
@@ -242,14 +248,14 @@ switch present_state
         [vector1_envelop_profile(i, 3), vector1_envelop_profile(i, 4)] = conversionClass.cartesian2vectors(current_measured_points(101+i, 1) - reference_point);
         end
 
-        figure
-        plot(vector1_envelop_profile(:, 2), vector1_envelop_profile(:, 1))
-        figure
-        plot(vector1_envelop_profile(:, 4), vector1_envelop_profile(:, 3))
-        figure
-        plot(vector2_envelop_profile(:, 1), vector2_envelop_profile(:, 2))
-        figure
-        plot(vector2_envelop_profile(:, 3), vector2_envelop_profile(:, 4))
+%         figure
+%         plot(vector1_envelop_profile(:, 2), vector1_envelop_profile(:, 1))
+%         figure
+%         plot(vector1_envelop_profile(:, 4), vector1_envelop_profile(:, 3))
+%         figure
+%         plot(vector2_envelop_profile(:, 1), vector2_envelop_profile(:, 2))
+%         figure
+%         plot(vector2_envelop_profile(:, 3), vector2_envelop_profile(:, 4))
 
         max_gain_measurement = abs(current_measured_points(42:121, 1));
         max_target_gain = min(max_gain_measurement);
@@ -260,7 +266,7 @@ switch present_state
         %plot(gain_profile(:, 1), gain_profile(:, 2));
         %plot(max_gain_measurement);
 
-        for i = 1:1:10
+        for i = 1:1:num_target_gain_states
             target_gain_states_dB(i) = target_gain_states_dB_normalized(i) + 20*log10(max_target_gain);
         end
 
@@ -273,8 +279,8 @@ switch present_state
         target_gain_states(end) = max_target_gain;
         target_gain_states_dB(end) = 20*log10(max_target_gain);
 
-        for i = 1:1:10
-            plot_gain_circle(target_gain_states(11 - i));
+        for i = 1:1:num_target_gain_states
+            plot_gain_circle(target_gain_states(num_target_gain_states + 1 - i));
             hold on
             drawnow
         end
@@ -331,13 +337,20 @@ switch present_state
         
         %distance_error_criteria()
 
-        if distance_error < distance_error_criteria()
-            valid = 1;
+        if VALIDATION
+            if distance_error < distance_error_criteria()
+                valid = 1;
+            else
+                valid = measurementClass.measurement_validation(filtered_measurements(:, 1));
+            end
         else
-            valid = measurementClass.measurement_validation(filtered_measurements(:, 1));
-        end
+            valid = 1;
 
-        %valid = 1;
+            if distance_error < distance_error_criteria()
+                num_hit = num_hit + 1;
+                total_num_hit = total_num_hit + 1;
+            end
+        end
 
         % if Current_Point_Iteration_Count > 10
         %     valid = 1;
@@ -639,7 +652,8 @@ end
 
 
 function circle_report()
-global Current_Calibration_Gain_Index target_gain_states target_gain_states_dB target_phase_states Selected_Measurements measurement_counter total_measurement_counter Ending_Gain_Index Starting_Gain_Index phase_error_sum gain_error_sum
+global Current_Calibration_Gain_Index target_gain_states target_gain_states_dB target_phase_states Selected_Measurements measurement_counter total_measurement_counter Ending_Gain_Index Starting_Gain_Index phase_error_sum gain_error_sum...
+    VALIDATION num_hit total_num_hit num_target_phase_states
 
     actual_phase = angle(Selected_Measurements(Current_Calibration_Gain_Index, :));
     
@@ -657,9 +671,16 @@ global Current_Calibration_Gain_Index target_gain_states target_gain_states_dB t
     disp("Gain Circle " + Current_Calibration_Gain_Index + " at " + target_gain_states(Current_Calibration_Gain_Index) + " / " + target_gain_states_dB(Current_Calibration_Gain_Index) + " dB");
     disp("RMS Phase Error: " + phase_RMS_error + " / " + phase_RMS_error*180/pi + " degrees");
     disp("RMS Gain Error: " + gain_RMS_error + " / " + 10*log10(gain_RMS_error) + " dB");
-    disp("Number of new measurements: " + measurement_counter);
 
-    measurement_counter = 0;
+    if ~VALIDATION
+        hit_rate = num_hit/num_target_phase_states*100;
+        disp("Hit rate: " + hit_rate + "%");
+        num_hit = 0;
+    else
+        disp("Number of new measurements: " + measurement_counter);
+        measurement_counter = 0;
+    end
+
 
     if Current_Calibration_Gain_Index == Ending_Gain_Index
     
@@ -670,7 +691,14 @@ global Current_Calibration_Gain_Index target_gain_states target_gain_states_dB t
         disp("Calibration finish");
         disp("Total RMS Phase Error: " + total_RMS_phase_error + " / " + total_RMS_phase_error*180/pi + " degrees");
         disp("Total RMS Gain Error: " + total_RMS_gain_error + " / " + 10*log10(total_RMS_gain_error) + " dB");
-        disp("Total number of measurements for " + (Ending_Gain_Index - Starting_Gain_Index + 1) + " gain circles: " + total_measurement_counter);
+        
+        if ~VALIDATION
+            total_hit_rate = total_num_hit/(num_target_phase_states*(Ending_Gain_Index - Starting_Gain_Index + 1))*100;
+            disp("Total hit rate: " + total_hit_rate + "%");
+        else
+            disp("Total number of measurements for " + (Ending_Gain_Index - Starting_Gain_Index + 1) + " gain circles: " + total_measurement_counter);
+        end
+
     end
 
 end
