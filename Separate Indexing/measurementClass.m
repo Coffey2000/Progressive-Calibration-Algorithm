@@ -17,12 +17,16 @@ classdef measurementClass
             elseif choice == "polar"
                 gain = next(1);
                 %phase = next(2);
-                phase = measurementClass.phase_offset_compensation(next(2));
-
-                phase_index = conversionClass.phase2index(phase);
-                gain_index = conversionClass.gain2index(gain, phase_index);
-
+                
+%                 phase = measurementClass.phase_offset_compensation(next(2));
+% 
+%                 phase_index = conversionClass.phase2index(phase);
+%                 gain_index = conversionClass.gain2index(gain, phase_index);
         
+                [gain_index, ~] = conversionClass.gain_phase_2_indexes_first_guess(next(1), next(2));
+                [gain_index, ~] = conversionClass.gain_phase_2_indexes(next(1), next(2), gain_index);
+                [gain_index, phase_index] = conversionClass.gain_phase_2_indexes(next(1), next(2), gain_index);
+
                 %show_codeword(codeword);
             elseif choice == "index"
                 gain_index = next(1);

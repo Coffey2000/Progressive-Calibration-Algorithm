@@ -6,7 +6,8 @@ global num_target_gain_states num_target_phase_states Measurements Mapping Curre
      vector1_envelop_profile vector2_envelop_profile phase_error_sum gain_error_sum VALIDATION num_hit total_num_hit
 
 %%
-VALIDATION = 1;
+VALIDATION = 0;
+PLOT_TARGET_POINTS = 1;
 num_hit = 0;
 total_num_hit = 0;
 
@@ -136,6 +137,15 @@ while (next_state ~= "Finish Calibration")
 end
 
 hold off
+
+if PLOT_TARGET_POINTS
+    for i = Starting_Gain_Index:1:Ending_Gain_Index
+        for j = 1:1:num_target_phase_states
+            plot(conversionClass.polar2cartesian(target_gain_states(i), target_phase_states(j))+0.000001*1i, "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0 0.4470 0.7410]);
+            hold on
+        end
+    end
+end
 
 plot(Selected_Measurements(Starting_Gain_Index:Current_Calibration_Gain_Index, :), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", "g");
 hold on

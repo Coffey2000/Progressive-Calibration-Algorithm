@@ -15,6 +15,48 @@ classdef conversionClass
         end
 
 
+        function [gain_index, phase_index] = gain_phase_2_indexes_first_guess(gain, phase)
+
+            compensated_phase = measurementClass.phase_offset_compensation(phase);
+            phase_index = conversionClass.phase2index(compensated_phase);
+            gain_index = conversionClass.gain2index(gain, phase_index);
+        end
+
+
+        function [gain_index, phase_index] = gain_phase_2_indexes(gain, phase, gain_index_firstGuess)
+            global phase_profile gain2phaseVariation num_actual_phase_states
+
+            phaseVariation = interp1(gain2phaseVariation(:, 1), gain2phaseVariation(:, 2), gain_index_firstGuess);
+            
+            adjusted_phase_profile = zeros(num_actual_phase_states, 2);
+            adjusted_phase_profile(:, 1) = phase_profile(:, 1);
+            adjusted_phase_profile(:, 2) = phase_profile(:, 2) + phaseVariation;
+
+            maximum_phase = adjusted_phase_profile(end, 2);
+            minimum_phase = adjusted_phase_profile(1, 2);
+
+
+            if phase > maximum_phase
+                phase = phase - 2*pi;
+                if phase < minimum_phase
+                    N = [maximum_phase minimum_phase];
+                    [~, I] = min(abs(phase - N));
+                    phase = N(I);
+                end
+            end
+
+            phase_index = round(interp1(adjusted_phase_profile(:, 2), adjusted_phase_profile(:, 1), phase));
+
+            if phase_index <= 0
+                phase_index = 1;
+            elseif phase_index > num_actual_phase_states
+                phase_index = num_actual_phase_states;
+            end
+
+            gain_index = conversionClass.gain2index(gain, phase_index);
+            %gain_index = gain_index_firstGuess;
+        end
+
 
         function [phase1, phase2] = cartesian2phases(point)
         global L1 L2
