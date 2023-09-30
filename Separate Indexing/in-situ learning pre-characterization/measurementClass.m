@@ -33,16 +33,29 @@ classdef measurementClass
                 phase_index = next(2);
                 
             elseif choice == "model"
-                normalized_gain = next(1)/max_gain;
-                normalized_phase = conversionClass.wrap22pi(next(2))/(2*pi);
+            %    normalized_gain = next(1)/max_gain;
+            %    normalized_phase = conversionClass.wrap22pi(next(2))/(2*pi);
 
-                model_output = Adapted_MODEL([normalized_gain; normalized_phase]);
+            %    model_output = Adapted_MODEL([normalized_gain; normalized_phase]);
 
-                normalized_gain_index = model_output(1, 1);
-                normalized_phase_index = model_output(2, 1);
+            %    normalized_gain_index = model_output(1, 1);
+            %    normalized_phase_index = model_output(2, 1);
 
-                gain_index = round(1 + (num_actual_gain_states - 1)*normalized_gain_index);
-                phase_index = round(1 + (num_actual_phase_states - 1)*normalized_phase_index);
+            %    gain_index = round(1 + (num_actual_gain_states - 1)*normalized_gain_index);
+            %    phase_index = round(1 + (num_actual_phase_states - 1)*normalized_phase_index);
+
+                [normalized_real, normalized_imag] = conversionClass.polar2rec(next(1)/max_gain, next(2));
+
+                model_output = Adapted_MODEL([normalized_real; normalized_imag]);
+
+                normalized_real_index = model_output(1, 1);
+                normalized_imag_index = model_output(2, 1);
+
+                normalized_gain_index = sqrt(normalized_real_index^2 + normalized_imag_index^2);
+                normalized_phase_index = atan(normalized_imag_index/normalized_real_index);
+                
+                gain_index = conversionClass.parameter_denormalization(normalized_gain_index, 1, num_actual_gain_states);
+                phase_index = conversionClass.parameter_denormalization(normalized_phase_index, 1, num_actual_phase_states);
             else
                 disp("Error: Invalid choise of measurement");
             end

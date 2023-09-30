@@ -13,9 +13,9 @@ total_num_hit = 0;
 
 
 %
-LEARNING_SAMPLE_SIZE = 500;
+LEARNING_SAMPLE_SIZE = 2000;
 GAIN_PROFILE_SIZE = 10;
-ENABLE_OUTLINE_SAMPLING = 1;
+ENABLE_OUTLINE_SAMPLING = 0;
 
 %%
 kernel_size = 1;
@@ -210,11 +210,11 @@ switch present_state
             TOTAL_SAMPLE = NUM_OUTLINE_SAMPLE + LEARNING_SAMPLE_SIZE;
             training_dataset = zeros(4, TOTAL_SAMPLE);
 
-            next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1) = round(1 + (num_actual_gain_states - 1)*rand(LEARNING_SAMPLE_SIZE, 1));
-            next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 2) = round(1 + (num_actual_phase_states - 1)*rand(LEARNING_SAMPLE_SIZE, 1));
+            next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1) = conversionClass.parameter_denormalization(rand(LEARNING_SAMPLE_SIZE, 1), 1, num_actual_gain_states);
+            next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 2) = conversionClass.parameter_denormalization(rand(LEARNING_SAMPLE_SIZE, 1), 1, num_actual_phase_states);
 
-            training_dataset(3, 1:TOTAL_SAMPLE) = (next_measurements(1:TOTAL_SAMPLE, 1) - 1)/(num_actual_gain_states - 1);
-            training_dataset(4, 1:TOTAL_SAMPLE) = (next_measurements(1:TOTAL_SAMPLE, 2) - 1)/(num_actual_phase_states - 1);
+            training_dataset(3, 1:TOTAL_SAMPLE) = conversionClass.parameter_normalization(next_measurements(1:TOTAL_SAMPLE, 1), 1, num_actual_gain_states);
+            training_dataset(4, 1:TOTAL_SAMPLE) = conversionClass.parameter_normalization(next_measurements(1:TOTAL_SAMPLE, 2), 1, num_actual_phase_states);
             
         else
             next_measurements(1 : num_actual_phase_states, 1) = num_actual_gain_states;
@@ -224,11 +224,15 @@ switch present_state
             TOTAL_SAMPLE = NUM_OUTLINE_SAMPLE + LEARNING_SAMPLE_SIZE;
             training_dataset = zeros(4, LEARNING_SAMPLE_SIZE);
 
-            next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1) = round(1 + (num_actual_gain_states - 1)*rand(LEARNING_SAMPLE_SIZE, 1));
-            next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 2) = round(1 + (num_actual_phase_states - 1)*rand(LEARNING_SAMPLE_SIZE, 1));
+            next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1) = conversionClass.parameter_denormalization(rand(LEARNING_SAMPLE_SIZE, 1), 1, num_actual_gain_states);
+            next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 2) = conversionClass.parameter_denormalization(rand(LEARNING_SAMPLE_SIZE, 1), 1, num_actual_phase_states);
 
-            training_dataset(3, 1:LEARNING_SAMPLE_SIZE) = (next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1) - 1)/(num_actual_gain_states - 1);
-            training_dataset(4, 1:LEARNING_SAMPLE_SIZE) = (next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 2) - 1)/(num_actual_phase_states - 1);
+            for i = 1:1:LEARNING_SAMPLE_SIZE
+                [training_dataset(3, i), training_dataset(4, i)] = conversionClass.polar2rec(conversionClass.parameter_normalization(next_measurements(NUM_OUTLINE_SAMPLE + i, 1),...
+                 1, num_actual_gain_states), conversionClass.parameter_normalization(next_measurements(NUM_OUTLINE_SAMPLE + i, 2), 1, num_actual_phase_states)*2*pi);
+            end
+        %    training_dataset(3, 1:LEARNING_SAMPLE_SIZE) = conversionClass.parameter_normalization(next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1), 1, num_actual_gain_states);
+        %    training_dataset(4, 1:LEARNING_SAMPLE_SIZE) = conversionClass.parameter_normalization(next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 2), 1, num_actual_phase_states);
         end
 
         next_choice = "index";
@@ -245,11 +249,14 @@ switch present_state
             max_gain = max(max_gain_measurement);
             min_gain = abs(current_measured_points(1, 1));
             
-            training_dataset(1, 1:TOTAL_SAMPLE) = abs(current_measured_points(1:TOTAL_SAMPLE, 1))./max_gain;
+        %    training_dataset(1, 1:TOTAL_SAMPLE) = abs(current_measured_points(1:TOTAL_SAMPLE, 1))./max_gain;
 
-            for i=1:1:TOTAL_SAMPLE
-                training_dataset(2, i) = conversionClass.wrap22pi(angle(current_measured_points(i, 1)))/(2*pi);
-            end
+        %    for i=1:1:TOTAL_SAMPLE
+        %        training_dataset(2, i) = conversionClass.wrap22pi(angle(current_measured_points(i, 1)))/(2*pi);
+        %    end
+
+            training_dataset(1, 1:TOTAL_SAMPLE) = real(current_measured_points(1:TOTAL_SAMPLE, 1))./max_gain;
+            training_dataset(2, 1:TOTAL_SAMPLE) = imag(current_measured_points(1:TOTAL_SAMPLE, 1))./max_gain;
 
         else
             max_gain_measurement = abs(current_measured_points(1 : num_actual_phase_states, 1));
@@ -257,11 +264,14 @@ switch present_state
             max_gain = max(max_gain_measurement);
             min_gain = 0;
             
-            training_dataset(1, 1:LEARNING_SAMPLE_SIZE) = abs(current_measured_points(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1))./max_gain;
+        %    training_dataset(1, 1:LEARNING_SAMPLE_SIZE) = abs(current_measured_points(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1))./max_gain;
 
-            for i=1:1:LEARNING_SAMPLE_SIZE
-                training_dataset(2, i) = conversionClass.wrap22pi(angle(current_measured_points(NUM_OUTLINE_SAMPLE + i, 1)))/(2*pi);
-            end
+        %    for i=1:1:LEARNING_SAMPLE_SIZE
+        %        training_dataset(2, i) = conversionClass.wrap22pi(angle(current_measured_points(NUM_OUTLINE_SAMPLE + i, 1)))/(2*pi);
+        %    end
+
+            training_dataset(1, 1:LEARNING_SAMPLE_SIZE) = real(current_measured_points(1:LEARNING_SAMPLE_SIZE, 1))./max_gain;
+            training_dataset(2, 1:LEARNING_SAMPLE_SIZE) = imag(current_measured_points(1:LEARNING_SAMPLE_SIZE, 1))./max_gain;
         end
 
         shuffled_training_dataset = training_dataset(:, randperm(size(training_dataset, 2)));
