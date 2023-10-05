@@ -13,7 +13,7 @@ total_num_hit = 0;
 
 
 %
-LEARNING_SAMPLE_SIZE = 2000;
+LEARNING_SAMPLE_SIZE = 500;
 GAIN_PROFILE_SIZE = 10;
 ENABLE_OUTLINE_SAMPLING = 0;
 
@@ -188,7 +188,7 @@ function [next_measurements, next_choice, next_state] = Calibration_FSM(current_
 global phase_offset num_target_phase_states num_target_gain_states Mapping Current_Calibration_Gain_Index Current_Calibration_Phase_Index target_gain_states ...
     target_phase_states phase_error_criteria phase_error_history Selected_Measurements Current_Point_Iteration_Count kernel_size original_kernel_size Starting_Gain_Index Ending_Gain_Index...
     num_actual_gain_states num_actual_phase_states gain_profile phase_profile gain2phaseVariation max_gain_measurement max_target_gain ...
-    target_gain_states_dB_normalized target_gain_states_dB min_target_gain actual_gain_resolution kernel_offset measurement_counter max_gain min_gain VALIDATION num_hit total_num_hit...
+    target_gain_states_dB_normalized target_gain_states_dB min_target_gain actual_gain_resolution actual_phase_resolution kernel_offset measurement_counter max_gain min_gain VALIDATION num_hit total_num_hit...
     LEARNING_SAMPLE_SIZE training_dataset TOTAL_SAMPLE GAIN_PROFILE_SIZE Adapted_MODEL ENABLE_OUTLINE_SAMPLING GAIN_PROFILE_SIZE NUM_OUTLINE_SAMPLE
 
 % next_phases is a N by 2 matrix where N is the number of phases to measured next and the 2 columns are phase 1 and phase 2.
@@ -213,8 +213,19 @@ switch present_state
             next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1) = conversionClass.parameter_denormalization(rand(LEARNING_SAMPLE_SIZE, 1), 1, num_actual_gain_states);
             next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 2) = conversionClass.parameter_denormalization(rand(LEARNING_SAMPLE_SIZE, 1), 1, num_actual_phase_states);
 
-            training_dataset(3, 1:TOTAL_SAMPLE) = conversionClass.parameter_normalization(next_measurements(1:TOTAL_SAMPLE, 1), 1, num_actual_gain_states);
-            training_dataset(4, 1:TOTAL_SAMPLE) = conversionClass.parameter_normalization(next_measurements(1:TOTAL_SAMPLE, 2), 1, num_actual_phase_states);
+
+            for i = 1:1:TOTAL_SAMPLE
+                sample_gain_index = next_measurements(i, 1);
+                normalized_sample_gain_index = conversionClass.parameter_normalization(sample_gain_index, 1, num_actual_gain_states);
+
+                sample_phase_index = next_measurements(i, 2);
+                twopi_normalized_sample_phase_index = conversionClass.parameter_normalization(sample_phase_index, 1, num_actual_phase_states)*(2*pi - actual_phase_resolution);
+
+                [training_dataset(3, i), training_dataset(4, i)] = conversionClass.polar2rec(normalized_sample_gain_index, twopi_normalized_sample_phase_index);
+            end
+
+            %training_dataset(3, 1:TOTAL_SAMPLE) = conversionClass.parameter_normalization(next_measurements(1:TOTAL_SAMPLE, 1), 1, num_actual_gain_states);
+            %training_dataset(4, 1:TOTAL_SAMPLE) = conversionClass.parameter_normalization(next_measurements(1:TOTAL_SAMPLE, 2), 1, num_actual_phase_states);
             
         else
             next_measurements(1 : num_actual_phase_states, 1) = num_actual_gain_states;
@@ -228,8 +239,16 @@ switch present_state
             next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 2) = conversionClass.parameter_denormalization(rand(LEARNING_SAMPLE_SIZE, 1), 1, num_actual_phase_states);
 
             for i = 1:1:LEARNING_SAMPLE_SIZE
-                [training_dataset(3, i), training_dataset(4, i)] = conversionClass.polar2rec(conversionClass.parameter_normalization(next_measurements(NUM_OUTLINE_SAMPLE + i, 1),...
-                 1, num_actual_gain_states), conversionClass.parameter_normalization(next_measurements(NUM_OUTLINE_SAMPLE + i, 2), 1, num_actual_phase_states)*2*pi);
+                sample_gain_index = next_measurements(NUM_OUTLINE_SAMPLE + i, 1);
+                normalized_sample_gain_index = conversionClass.parameter_normalization(sample_gain_index, 1, num_actual_gain_states);
+
+                sample_phase_index = next_measurements(NUM_OUTLINE_SAMPLE + i, 2);
+                twopi_normalized_sample_phase_index = conversionClass.parameter_normalization(sample_phase_index, 1, num_actual_phase_states)*(2*pi - actual_phase_resolution);
+
+                [training_dataset(3, i), training_dataset(4, i)] = conversionClass.polar2rec(normalized_sample_gain_index, twopi_normalized_sample_phase_index);
+
+%                 [training_dataset(3, i), training_dataset(4, i)] = conversionClass.polar2rec(conversionClass.parameter_normalization(next_measurements(NUM_OUTLINE_SAMPLE + i, 1),...
+%                  1, num_actual_gain_states), conversionClass.parameter_normalization(next_measurements(NUM_OUTLINE_SAMPLE + i, 2), 1, num_actual_phase_states)*(2*pi - actual_phase_resolution));
             end
         %    training_dataset(3, 1:LEARNING_SAMPLE_SIZE) = conversionClass.parameter_normalization(next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1), 1, num_actual_gain_states);
         %    training_dataset(4, 1:LEARNING_SAMPLE_SIZE) = conversionClass.parameter_normalization(next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 2), 1, num_actual_phase_states);
@@ -270,8 +289,8 @@ switch present_state
         %        training_dataset(2, i) = conversionClass.wrap22pi(angle(current_measured_points(NUM_OUTLINE_SAMPLE + i, 1)))/(2*pi);
         %    end
 
-            training_dataset(1, 1:LEARNING_SAMPLE_SIZE) = real(current_measured_points(1:LEARNING_SAMPLE_SIZE, 1))./max_gain;
-            training_dataset(2, 1:LEARNING_SAMPLE_SIZE) = imag(current_measured_points(1:LEARNING_SAMPLE_SIZE, 1))./max_gain;
+            training_dataset(1, 1:LEARNING_SAMPLE_SIZE) = real(current_measured_points(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1))./max_gain;
+            training_dataset(2, 1:LEARNING_SAMPLE_SIZE) = imag(current_measured_points(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1))./max_gain;
         end
 
         shuffled_training_dataset = training_dataset(:, randperm(size(training_dataset, 2)));

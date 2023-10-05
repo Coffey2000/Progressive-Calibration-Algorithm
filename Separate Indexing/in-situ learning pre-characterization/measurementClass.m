@@ -2,7 +2,8 @@ classdef measurementClass
     methods (Static)
         
         function reading = measure(next, choice)
-        global Measurements measurement_counter total_measurement_counter channel1_S21_38r5GHz_phaseCorrected channel1_S21_38r5GHz Adapted_MODEL max_gain num_actual_gain_states num_actual_phase_states channel2B_Channels_OFF_Atten_Phase
+        global Measurements measurement_counter total_measurement_counter channel1_S21_38r5GHz_phaseCorrected channel1_S21_38r5GHz ...
+        Adapted_MODEL max_gain num_actual_gain_states num_actual_phase_states channel2B_Channels_OFF_Atten_Phase actual_phase_resolution
         
             if size(next, 1) == 0
                 reading = [];
@@ -51,8 +52,14 @@ classdef measurementClass
                 normalized_real_index = model_output(1, 1);
                 normalized_imag_index = model_output(2, 1);
 
-                normalized_gain_index = sqrt(normalized_real_index^2 + normalized_imag_index^2);
-                normalized_phase_index = atan(normalized_imag_index/normalized_real_index);
+                normalized_index_cartesian_point = normalized_real_index + 1i*normalized_imag_index;
+                normalized_gain_index = abs(normalized_index_cartesian_point);
+                twopi_normalized_phase_index = conversionClass.wrap22pi(angle(normalized_index_cartesian_point));
+
+%                 normalized_gain_index = sqrt(normalized_real_index^2 + normalized_imag_index^2);
+%                 twopi_normalized_phase_index = atan(normalized_imag_index/normalized_real_index);
+
+                normalized_phase_index = twopi_normalized_phase_index/(2*pi - actual_phase_resolution);
                 
                 gain_index = conversionClass.parameter_denormalization(normalized_gain_index, 1, num_actual_gain_states);
                 phase_index = conversionClass.parameter_denormalization(normalized_phase_index, 1, num_actual_phase_states);
