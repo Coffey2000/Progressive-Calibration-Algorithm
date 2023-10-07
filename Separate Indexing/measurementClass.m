@@ -15,7 +15,7 @@ classdef measurementClass
                 return
 
             elseif choice == "polar"
-                gain = next(1);
+                %gain = next(1);
                 %phase = next(2);
                 
 %                 phase = measurementClass.phase_offset_compensation(next(2));
@@ -48,13 +48,13 @@ classdef measurementClass
             end
             
             
-            if gain_index <= 0
+            if gain_index < 1
                 gain_index = 1;
             elseif gain_index > num_actual_gain_states
                 gain_index = num_actual_gain_states;
             end
 
-            if phase_index <= 0
+            if phase_index < 1
                 phase_index = 1;
             elseif phase_index > num_actual_phase_states
                 phase_index = num_actual_phase_states;

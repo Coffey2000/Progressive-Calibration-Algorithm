@@ -43,11 +43,18 @@ classdef conversionClass
                     [~, I] = min(abs(phase - N));
                     phase = N(I);
                 end
+            elseif phase < minimum_phase
+                phase = phase + 2*pi;
+                if phase > maximum_phase
+                    N = [maximum_phase minimum_phase];
+                    [~, I] = min(abs(phase - N));
+                    phase = N(I);
+                end
             end
 
             phase_index = round(interp1(adjusted_phase_profile(:, 2), adjusted_phase_profile(:, 1), phase));
 
-            if phase_index <= 0
+            if phase_index < 1
                 phase_index = 1;
             elseif phase_index > num_actual_phase_states
                 phase_index = num_actual_phase_states;

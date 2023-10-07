@@ -135,7 +135,7 @@ while (next_state ~= "Finish Calibration")
             current_measured_points(i, 1) = measurementClass.measure(next_measurements(i, :), next_choice);
             current_measured_points(i, 2:end) = next_measurements(i, :);
 
-            if present_state == "Gain Profile Characterization"
+            if present_state == "Gain and Phase Profile Characterization"
                 plot(current_measured_points(i, 1), "O", "LineWidth", 1.5, "MarkerSize", 10, "Color", [0 0.4470 0.7410]);
                 hold on
                 drawnow
@@ -191,7 +191,7 @@ global phase_offset num_target_phase_states num_target_gain_states Mapping Curre
 
 switch present_state
     case "Start Calibration"
-        next_state = "Gain Profile Characterization";
+        next_state = "Gain and Phase Profile Characterization";
         gain_profile(:, 1) = transpose(round(linspace(1, num_actual_gain_states, 10)));
         next_measurements(1:10, 1) = gain_profile(:, 1);
         next_measurements(1:10, 2) = 1;
@@ -203,7 +203,7 @@ switch present_state
 
 
 
-    case "Gain Profile Characterization"
+    case "Gain and Phase Profile Characterization"
         gain_profile(:, 2) = abs(current_measured_points(1:10, 1));
 
         phase_profile(:, 1) = transpose(linspace(1, num_actual_phase_states, num_actual_phase_states));
@@ -691,7 +691,7 @@ end
 
 function circle_report()
     global Current_Calibration_Gain_Index target_gain_states target_gain_states_dB target_phase_states Selected_Measurements measurement_counter total_measurement_counter Ending_Gain_Index Starting_Gain_Index phase_error_sum gain_error_sum...
-        VALIDATION num_hit total_num_hit num_target_phase_states
+        VALIDATION num_hit total_num_hit num_target_phase_states total_RMS_phase_error_degree total_RMS_gain_error_dB
     
         actual_phase = angle(Selected_Measurements(Current_Calibration_Gain_Index, :));
         
@@ -708,7 +708,7 @@ function circle_report()
         disp(" ");
         disp("Gain Circle " + Current_Calibration_Gain_Index + " at " + target_gain_states(Current_Calibration_Gain_Index) + " / " + target_gain_states_dB(Current_Calibration_Gain_Index) + " dB");
         disp("RMS Phase Error: " + phase_RMS_error + " / " + phase_RMS_error*180/pi + " degrees");
-        disp("RMS Gain Error: " + gain_RMS_error + " / " + 10*log10(gain_RMS_error) + " dB");
+        disp("RMS Gain Error: " + gain_RMS_error + " / " + 20*log10(gain_RMS_error) + " dB");
     
         if ~VALIDATION
             hit_rate = num_hit/num_target_phase_states*100;
@@ -724,11 +724,14 @@ function circle_report()
         
             total_RMS_phase_error = sqrt(phase_error_sum/(Ending_Gain_Index - Starting_Gain_Index + 1));
             total_RMS_gain_error = sqrt(gain_error_sum/(Ending_Gain_Index - Starting_Gain_Index + 1));
+
+            total_RMS_phase_error_degree = total_RMS_phase_error*180/pi;
+            total_RMS_gain_error_dB = 20*log10(total_RMS_gain_error);
     
             disp(" ");
             disp("Calibration finish");
-            disp("Total RMS Phase Error: " + total_RMS_phase_error + " / " + total_RMS_phase_error*180/pi + " degrees");
-            disp("Total RMS Gain Error: " + total_RMS_gain_error + " / " + 10*log10(total_RMS_gain_error) + " dB");
+            disp("Total RMS Phase Error: " + total_RMS_phase_error + " / " + total_RMS_phase_error_degree + " degrees");
+            disp("Total RMS Gain Error: " + total_RMS_gain_error + " / " + total_RMS_gain_error_dB + " dB");
             
             if ~VALIDATION
                 total_hit_rate = total_num_hit/(num_target_phase_states*(Ending_Gain_Index - Starting_Gain_Index + 1))*100;
@@ -739,7 +742,8 @@ function circle_report()
     
         end
     
-    end
+end
+
 
 
 
