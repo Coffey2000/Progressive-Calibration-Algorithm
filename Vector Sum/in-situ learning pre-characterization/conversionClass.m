@@ -1,6 +1,21 @@
 classdef conversionClass
     methods (Static)
 
+        function [real, imag] = polar2rec(gain, phase)
+            real = gain*cos(phase);
+            imag = gain*sin(phase);
+        end
+
+
+        function normalized_parameter = parameter_normalization(parameter, lower, upper)
+            normalized_parameter = (parameter - lower)/(upper - lower);
+        end
+
+        function denormalized_parameter = parameter_denormalization(normalized_parameter, lower, upper)
+            denormalized_parameter = round(normalized_parameter*(upper - lower) + lower);
+        end
+
+
 
         function index = cap(pre_cap_index, start, ending)
             if pre_cap_index < start

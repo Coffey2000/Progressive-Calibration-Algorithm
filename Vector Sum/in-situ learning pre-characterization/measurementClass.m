@@ -2,7 +2,7 @@ classdef measurementClass
     methods (Static)
         
         function reading = measure(next, choice)
-        global Measurements measurement_counter total_measurement_counter PS_MODEL max_gain num_actual_vector_states rfvm_40GHz_table reference_point
+        global Measurements measurement_counter total_measurement_counter Adapted_MODEL max_gain num_actual_vector_states rfvm_40GHz_table reference_point
         
             if size(next, 1) == 0
                 reading = [];
@@ -28,18 +28,16 @@ classdef measurementClass
                 vector1_index = next(1);
                 vector2_index = next(2);
                 
-%             elseif choice == "model"
-%                 gain = next(1)/max_gain;
-%                 phase = conversionClass.wrap22pi(next(2))/(2*pi);
-% 
-%                 model_output = PS_MODEL([gain; phase]);
-% 
-%                 normalized_gain_index = model_output(1, 1);
-%                 normalized_phase_index = model_output(2, 1);
-% 
-%                 gain_index = round(normalized_gain_index*num_actual_gain_states);
-%                 phase_index = round(normalized_phase_index*num_actual_phase_states);
-% 
+            elseif choice == "model"
+                [normalized_real, normalized_imag] = conversionClass.polar2rec(next(1)/max_gain, next(2));
+
+                model_output = Adapted_MODEL([normalized_real; normalized_imag]);
+
+                normalized_real_index = model_output(1, 1);
+                normalized_imag_index = model_output(2, 1);
+
+                vector1_index = conversionClass.parameter_denormalization(normalized_real_index, 1, num_actual_vector_states);
+                vector2_index = conversionClass.parameter_denormalization(normalized_imag_index, 1, num_actual_vector_states);
                 
             else
                 disp("Error: Invalid choise of measurement");
