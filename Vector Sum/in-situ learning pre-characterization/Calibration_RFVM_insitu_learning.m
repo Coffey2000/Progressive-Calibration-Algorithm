@@ -3,18 +3,19 @@ global num_target_gain_states num_target_phase_states Measurements Mapping Curre
      lowest_detectable_gain_dB  target_gain_states_dB phase_error_history Selected_Measurements Current_Point_Iteration_Count original_kernel_size filter_tolerance Starting_Gain_Index Ending_Gain_Index...
     measurement_counter num_actual_vector_states num_actual_phase_states gain_profile max_gain_measurement max_target_gain ...
      phase_offset target_gain_states_dB_normalized actual_phase_resolution actual_phase_states min_target_gain total_measurement_counter kernel_offset theta1 theta2 rfvm_40GHz_table vector1_profile vector2_profile phase_reference...
-     vector1_envelop_profile vector2_envelop_profile phase_error_sum gain_error_sum VALIDATION num_hit total_num_hit LEARNING_SAMPLE_SIZE VECTOR_PROFILE_SIZE ENABLE_OUTLINE_SAMPLING USE_MACHINE_LEARNING
+     vector1_envelop_profile vector2_envelop_profile phase_error_sum gain_error_sum VALIDATION num_hit total_num_hit LEARNING_SAMPLE_SIZE ADJUSTED_LEARNING_SAMPLE_SIZE VECTOR_PROFILE_SIZE ENABLE_OUTLINE_SAMPLING...
+      USE_MACHINE_LEARNING SAMPLING_PATTERN EQUAL_SPACING_SAMPLING
 
 %%
 VALIDATION = 0;
 PLOT_TARGET_POINTS = 1;
-num_hit = 0;
-total_num_hit = 0;
 
 
-%
+%%
 USE_MACHINE_LEARNING = 1;
-LEARNING_SAMPLE_SIZE = 200;
+SAMPLING_PATTERN = "woven";    %choose "uniform", "woven" or "random"
+EQUAL_SPACING_SAMPLING = 1;
+LEARNING_SAMPLE_SIZE = 500;
 VECTOR_PROFILE_SIZE = 20;
 ENABLE_OUTLINE_SAMPLING = 0;
 
@@ -24,7 +25,7 @@ kernel_size = 1;
 lowest_detectable_gain_dB = -8;
 
 Starting_Gain_Index = 1;
-Ending_Gain_Index = 12;
+Ending_Gain_Index = 8;
 
 filter_tolerance = 1.2;
 
@@ -96,6 +97,8 @@ Current_Point_Iteration_Count = 0;
 measurement_counter = 0;
 total_measurement_counter = 0;
 
+num_hit = 0;
+total_num_hit = 0;
 
 
 % plot(sweep_reading(1, :), "o");
@@ -180,7 +183,8 @@ global phase_offset num_target_phase_states Mapping Current_Calibration_Gain_Ind
     num_actual_gain_states num_actual_phase_states gain_profile max_gain_measurement max_target_gain ...
     target_gain_states_dB_normalized target_gain_states_dB actual_gain_resolution kernel_offset measurement_counter num_actual_vector_states vector1_profile vector2_profile...
     theta1 theta2 reference_index reference_point vector1_envelop_profile vector2_envelop_profile max_gain min_gain VALIDATION num_hit total_num_hit num_target_gain_states...
-    VECTOR_PROFILE_SIZE LEARNING_SAMPLE_SIZE ENABLE_OUTLINE_SAMPLING USE_MACHINE_LEARNING TOTAL_SAMPLE NUM_OUTLINE_SAMPLE Adapted_MODEL
+    VECTOR_PROFILE_SIZE LEARNING_SAMPLE_SIZE ENABLE_OUTLINE_SAMPLING USE_MACHINE_LEARNING TOTAL_SAMPLE NUM_OUTLINE_SAMPLE Adapted_MODEL SAMPLING_PATTERN ADJUSTED_LEARNING_SAMPLE_SIZE...
+    EQUAL_SPACING_SAMPLING
 
 % next_phases is a N by 2 matrix where N is the number of phases to measured next and the 2 columns are phase 1 and phase 2.
 % current_measured_points is a N by 1 vector where N is the number of points in the current measurements.
@@ -195,26 +199,97 @@ switch present_state
             disp(" ");
             disp("Using Machine Learning");
 
-            vector1_profile(:, 1) = transpose(round(linspace(1, num_actual_vector_states, VECTOR_PROFILE_SIZE)));
-            vector2_profile(:, 1) = transpose(round(linspace(1, num_actual_vector_states, VECTOR_PROFILE_SIZE)));
-
-            % outline measurements
-            next_measurements(VECTOR_PROFILE_SIZE*0 + 1:VECTOR_PROFILE_SIZE*1, 1) = vector1_profile(:, 1);
-            next_measurements(VECTOR_PROFILE_SIZE*0 + 1:VECTOR_PROFILE_SIZE*1, 2) = 1;
-            next_measurements(VECTOR_PROFILE_SIZE*1 + 1:VECTOR_PROFILE_SIZE*2, 1) = vector1_profile(:, 1);
-            next_measurements(VECTOR_PROFILE_SIZE*1 + 1:VECTOR_PROFILE_SIZE*2, 2) = num_actual_vector_states;
-    
-            next_measurements(VECTOR_PROFILE_SIZE*2 + 1:VECTOR_PROFILE_SIZE*3, 1) = 1;
-            next_measurements(VECTOR_PROFILE_SIZE*2 + 1:VECTOR_PROFILE_SIZE*3, 2) = vector2_profile(:, 1);
-            next_measurements(VECTOR_PROFILE_SIZE*3 + 1:VECTOR_PROFILE_SIZE*4, 1) = num_actual_vector_states;
-            next_measurements(VECTOR_PROFILE_SIZE*3 + 1:VECTOR_PROFILE_SIZE*4, 2) = vector2_profile(:, 1);
-
-            NUM_OUTLINE_SAMPLE = VECTOR_PROFILE_SIZE*4;
-            TOTAL_SAMPLE = NUM_OUTLINE_SAMPLE + LEARNING_SAMPLE_SIZE;
 
             % learning sample measurements
-            next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1) = conversionClass.parameter_denormalization(rand(LEARNING_SAMPLE_SIZE, 1), 1, num_actual_vector_states);
-            next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 2) = conversionClass.parameter_denormalization(rand(LEARNING_SAMPLE_SIZE, 1), 1, num_actual_vector_states);
+            if SAMPLING_PATTERN == "random"
+                vector1_profile(:, 1) = transpose(round(linspace(1, num_actual_vector_states, VECTOR_PROFILE_SIZE)));
+                vector2_profile(:, 1) = transpose(round(linspace(1, num_actual_vector_states, VECTOR_PROFILE_SIZE)));
+    
+                % outline measurements
+                next_measurements(VECTOR_PROFILE_SIZE*0 + 1:VECTOR_PROFILE_SIZE*1, 1) = vector1_profile(:, 1);
+                next_measurements(VECTOR_PROFILE_SIZE*0 + 1:VECTOR_PROFILE_SIZE*1, 2) = 1;
+                next_measurements(VECTOR_PROFILE_SIZE*1 + 1:VECTOR_PROFILE_SIZE*2, 1) = vector1_profile(:, 1);
+                next_measurements(VECTOR_PROFILE_SIZE*1 + 1:VECTOR_PROFILE_SIZE*2, 2) = num_actual_vector_states;
+        
+                next_measurements(VECTOR_PROFILE_SIZE*2 + 1:VECTOR_PROFILE_SIZE*3, 1) = 1;
+                next_measurements(VECTOR_PROFILE_SIZE*2 + 1:VECTOR_PROFILE_SIZE*3, 2) = vector2_profile(:, 1);
+                next_measurements(VECTOR_PROFILE_SIZE*3 + 1:VECTOR_PROFILE_SIZE*4, 1) = num_actual_vector_states;
+                next_measurements(VECTOR_PROFILE_SIZE*3 + 1:VECTOR_PROFILE_SIZE*4, 2) = vector2_profile(:, 1);
+    
+                NUM_OUTLINE_SAMPLE = VECTOR_PROFILE_SIZE*4;
+                ADJUSTED_LEARNING_SAMPLE_SIZE = LEARNING_SAMPLE_SIZE;
+                TOTAL_SAMPLE = NUM_OUTLINE_SAMPLE + ADJUSTED_LEARNING_SAMPLE_SIZE;
+
+                next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 1) = conversionClass.parameter_denormalization(rand(LEARNING_SAMPLE_SIZE, 1), 1, num_actual_vector_states);
+                next_measurements(NUM_OUTLINE_SAMPLE + 1 : TOTAL_SAMPLE, 2) = conversionClass.parameter_denormalization(rand(LEARNING_SAMPLE_SIZE, 1), 1, num_actual_vector_states);
+            else
+
+                if EQUAL_SPACING_SAMPLING
+                    num_sampling_vector = round(sqrt(LEARNING_SAMPLE_SIZE));
+                    possible_divisors = divisors(num_actual_vector_states);
+                    distance = abs(possible_divisors - num_sampling_vector + 1);
+                    index = distance == min(distance);
+                    matches = possible_divisors(index);
+                    adjusted_num_sampling_vector = matches(1) + 1;
+                    vector_index_interval = round(num_actual_vector_states/(adjusted_num_sampling_vector - 1));
+
+                    NUM_OUTLINE_SAMPLE = 0;
+                    ADJUSTED_LEARNING_SAMPLE_SIZE = adjusted_num_sampling_vector^2;
+                    TOTAL_SAMPLE = NUM_OUTLINE_SAMPLE + ADJUSTED_LEARNING_SAMPLE_SIZE;
+
+                    if SAMPLING_PATTERN == "uniform"
+                        for i = 1:1:adjusted_num_sampling_vector
+                            for j = 1:1:adjusted_num_sampling_vector
+                                % measurementClass takes care of 0 index
+                                next_measurements((i-1)*adjusted_num_sampling_vector + j, 1) = (i-1) * vector_index_interval;
+                                next_measurements((i-1)*adjusted_num_sampling_vector + j, 2) = (j-1) * vector_index_interval;
+                            end
+                        end
+    
+                    else % woven
+                        translation_index_step = round(vector_index_interval/2);
+    
+                        for i = 1:1:adjusted_num_sampling_vector
+                            for j = 1:1:adjusted_num_sampling_vector
+                                % measurementClass takes care of 0 index
+                                    next_measurements((i-1)*adjusted_num_sampling_vector + j, 1) = (i-1) * vector_index_interval;
+                                    next_measurements((i-1)*adjusted_num_sampling_vector + j, 2) = mod((j-1) * vector_index_interval + (i-1)*translation_index_step, num_actual_vector_states + 1);
+                            end
+                        end
+                    end
+
+                else % if not equal spacing
+                    num_sampling_vector = round(sqrt(LEARNING_SAMPLE_SIZE));
+                    sample_vector_index = transpose(round(linspace(1, num_actual_vector_states, num_sampling_vector)));
+
+                    NUM_OUTLINE_SAMPLE = 0;
+                    ADJUSTED_LEARNING_SAMPLE_SIZE = num_sampling_vector^2;
+                    TOTAL_SAMPLE = NUM_OUTLINE_SAMPLE + ADJUSTED_LEARNING_SAMPLE_SIZE;
+
+                    if SAMPLING_PATTERN == "uniform"
+                        for i = 1:1:num_sampling_vector
+                            next_measurements(1 + (i-1)*num_sampling_vector: i*num_sampling_vector, 1) = sample_vector_index(i);
+                            next_measurements(1 + (i-1)*num_sampling_vector: i*num_sampling_vector, 2) = sample_vector_index;
+                        end
+    
+                    else % woven
+                        translation_index_step = round(abs(sample_vector_index(1)-sample_vector_index(2))/2);
+
+                        for i = 1:1:num_sampling_vector
+                            next_measurements(1 + (i-1)*num_sampling_vector: i*num_sampling_vector, 1) = sample_vector_index(i);
+
+                            translated_vector_index = mod(sample_vector_index + (i-1)*translation_index_step, num_actual_vector_states + 1);
+                            next_measurements(1 + (i-1)*num_sampling_vector: i*num_sampling_vector, 2) = translated_vector_index;
+                        end
+                    end
+                end
+
+            end
+            disp("Learning sample size after adjustment: " + ADJUSTED_LEARNING_SAMPLE_SIZE);
+
+            if EQUAL_SPACING_SAMPLING
+                disp("Disable EQUAL_SPACING_SAMPLING for closer learning sample size to the set value.")
+            end
 
             next_choice = "index";
 
@@ -375,12 +450,17 @@ switch present_state
 
     case "Training"
 
-        max_gain_measurement = abs(current_measured_points(1 : NUM_OUTLINE_SAMPLE, 1));
+        max_gain_measurement_index1 = current_measured_points(:, 2) == 1;
+        max_gain_measurement_index2 = current_measured_points(:, 2) == num_actual_vector_states;
+        max_gain_measurement_index3 = current_measured_points(:, 3) == 1;
+        max_gain_measurement_index4 = current_measured_points(:, 3) == num_actual_vector_states;
+        max_gain_measurement_index = max_gain_measurement_index1 | max_gain_measurement_index2 | max_gain_measurement_index3 | max_gain_measurement_index4;
+        max_gain_measurement = abs(current_measured_points(max_gain_measurement_index, 1));
         max_target_gain = min(max_gain_measurement);
         max_gain = max(max_gain_measurement);
         min_gain = 0;
 
-        if ENABLE_OUTLINE_SAMPLING
+        if SAMPLING_PATTERN == "random" && ENABLE_OUTLINE_SAMPLING
             training_dataset = zeros(4, TOTAL_SAMPLE);
             training_dataset(1, 1:TOTAL_SAMPLE) = real(current_measured_points(1:TOTAL_SAMPLE, 1))./max_gain;
             training_dataset(2, 1:TOTAL_SAMPLE) = imag(current_measured_points(1:TOTAL_SAMPLE, 1))./max_gain;
@@ -396,11 +476,11 @@ switch present_state
                 training_dataset(4, i) = normalized_sample_vector2_index;
             end
         else
-            training_dataset = zeros(4, LEARNING_SAMPLE_SIZE);
-            training_dataset(1, 1:LEARNING_SAMPLE_SIZE) = real(current_measured_points(NUM_OUTLINE_SAMPLE + 1:TOTAL_SAMPLE, 1))./max_gain;
-            training_dataset(2, 1:LEARNING_SAMPLE_SIZE) = imag(current_measured_points(NUM_OUTLINE_SAMPLE + 1:TOTAL_SAMPLE, 1))./max_gain;
+            training_dataset = zeros(4, ADJUSTED_LEARNING_SAMPLE_SIZE);
+            training_dataset(1, 1:ADJUSTED_LEARNING_SAMPLE_SIZE) = real(current_measured_points(NUM_OUTLINE_SAMPLE + 1:TOTAL_SAMPLE, 1))./max_gain;
+            training_dataset(2, 1:ADJUSTED_LEARNING_SAMPLE_SIZE) = imag(current_measured_points(NUM_OUTLINE_SAMPLE + 1:TOTAL_SAMPLE, 1))./max_gain;
 
-            for i = 1:1:LEARNING_SAMPLE_SIZE
+            for i = 1:1:ADJUSTED_LEARNING_SAMPLE_SIZE
                 sample_vector1_index = current_measured_points(NUM_OUTLINE_SAMPLE + i, 2);
                 normalized_sample_vector1_index = conversionClass.parameter_normalization(sample_vector1_index, 1, num_actual_vector_states);
 

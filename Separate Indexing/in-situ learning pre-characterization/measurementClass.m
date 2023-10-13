@@ -16,8 +16,8 @@ classdef measurementClass
                 return
 
             elseif choice == "polar"
-                gain = next(1);
-                %phase = next(2);
+%                 gain = next(1);
+%                 phase = next(2);
                 
 %                 phase = measurementClass.phase_offset_compensation(next(2));
 % 

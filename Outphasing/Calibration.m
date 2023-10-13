@@ -6,7 +6,7 @@ global DC_offset L1 L2 phase1_offset phase2_offset num_target_gain_states num_ta
 
 
 %%
-VALIDATION = 1;
+VALIDATION = 0;
 PLOT_TARGET_POINTS = 1;
 num_hit = 0;
 total_num_hit = 0;
@@ -14,7 +14,7 @@ total_num_hit = 0;
 
 
 %%
-kernel_size = 3;
+kernel_size = 1;
 lowest_detectable_gain_dB = -8;
 
 Starting_Gain_Index = 1;
@@ -65,7 +65,7 @@ phase_error_history = zeros(2, 4);
 
 phase_error_criteria = RTPS_phase_resolution;
 
-num_MODES = 3;
+num_MODES = 1;
 
 original_kernel_size = kernel_size;
 original_RTPS_phase_resolution = RTPS_phase_resolution;
@@ -245,7 +245,7 @@ drawnow
 function [next_measurements, next_choice, next_state] = Calibration_FSM(current_measured_points, present_state)
 global DC_offset L1 L2 phase1_offset phase2_offset num_target_phase_states num_target_gain_states Mapping Current_Calibration_Gain_Index Current_Calibration_Phase_Index target_gain_states ...
     target_phase_states phase_error_criteria magnitude_scaling_factor phase_error_history Selected_Measurements Current_Point_Iteration_Count kernel_size original_kernel_size Starting_Gain_Index Ending_Gain_Index...
-    RTPS_phase_resolution original_RTPS_phase_resolution original_RTPS_gain_resolution RTPS_gain_resolution kernel_offset VALIDATION num_hit total_num_hit
+    RTPS_phase_resolution original_RTPS_phase_resolution original_RTPS_gain_resolution RTPS_gain_resolution kernel_offset VALIDATION num_hit total_num_hit total_measurement_counter
 
 % next_phases is a N by 2 matrix where N is the number of phases to measured next and the 2 columns are phase 1 and phase 2.
 % current_measured_points is a N by 1 vector where N is the number of points in the current measurements.
