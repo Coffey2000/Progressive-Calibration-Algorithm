@@ -6,7 +6,7 @@ global num_target_gain_states num_target_phase_states Measurements Mapping Curre
      phase_error_sum gain_error_sum LEARNING_SAMPLE_SIZE Adapted_MODEL ENABLE_OUTLINE_SAMPLING GAIN_PROFILE_SIZE USE_MACHINE_LEARNING SAMPLING_PATTERN EQUAL_SPACING_SAMPLING
 
 %%
-VALIDATION = 0;
+VALIDATION = 1;
 PLOT_TARGET_POINTS = 1;
 
 
@@ -14,7 +14,7 @@ PLOT_TARGET_POINTS = 1;
 USE_MACHINE_LEARNING = 1;
 SAMPLING_PATTERN = "uniform";    %choose "uniform", "woven" or "random"
 EQUAL_SPACING_SAMPLING = 1;
-LEARNING_SAMPLE_SIZE = 300;
+LEARNING_SAMPLE_SIZE = 500;
 GAIN_PROFILE_SIZE = 10;
 ENABLE_OUTLINE_SAMPLING = 0;
 
@@ -379,11 +379,9 @@ switch present_state
             disp("Number of new measurements: " + measurement_counter);
         
             measurement_counter = 0;
-    
-            next_state = "Phase Offset Calibration";
-    
-            next_measurements(1, 1) = target_gain_states(Current_Calibration_Gain_Index);
-            next_measurements(1, 2) = target_phase_states(Current_Calibration_Phase_Index);
+
+            next_state = "Next Target Point";
+            next_measurements = next_kernel();
             next_choice = "polar";
     
             % scatter(real(polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(1))), imag(polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(1))));
@@ -516,84 +514,6 @@ switch present_state
         % hold on
         
         
-        
-
-
-
-
-
-    case "Phase Offset Calibration"
-        phase_offset = phase_offset_calculation(target_phase_states(Current_Calibration_Phase_Index), current_measured_points(1, 1));
-%         scatter(real(current_measured_points(1,1)), imag(current_measured_points(1,1)));
-%         hold on
-
-        next_state = "Phase Offset Control";
-        next_measurements(1, 1) = target_gain_states(Current_Calibration_Gain_Index);
-        next_measurements(1, 2) = target_phase_states(Current_Calibration_Phase_Index);
-        next_choice = "polar";
-
-
-
-
-
-
-
-    case "Phase Offset Control"
-        phase_error = phase_offset_calculation(target_phase_states(Current_Calibration_Phase_Index), current_measured_points(1, 1));
-        %gain_error = abs(target_gain_states(Current_Calibration_Gain_Index) - abs(current_measured_points(1, 1)));
-
-        % plot(current_measured_points(1,1), "o");
-        % hold on
-
-        if abs(phase_error) < phase_error_criteria
-
-            next_state = "Next Target Point";
-            %Current_Calibration_Phase_Index = Current_Calibration_Phase_Index + 1;
-            next_measurements = next_kernel();
-            next_choice = "polar";
-
-            plot(conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index)), 0, "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0 0.4470 0.7410]);
-            hold on
-            plot_gain_circle(target_gain_states(Current_Calibration_Gain_Index));
-            measurementClass.plot_measurements(next_measurements, "polar");
-
-        elseif phase_error == phase_error_history(1, 1)
-            if abs(phase_error) > abs(phase_error_history(2, 1))
-                phase_offset = phase_error_history(2, 2);
-            end
-            next_state = "Next Target Point";
-            next_measurements = next_kernel();
-            next_choice = "polar";
-
-            % plot(current_measured_points(1, 1), "*");
-            % hold on
-            plot(conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index)), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0 0.4470 0.7410]);
-            hold on
-            plot_gain_circle(target_gain_states(Current_Calibration_Gain_Index));
-            measurementClass.plot_measurements(next_measurements, "polar");
-
-        elseif phase_error == phase_error_history(2, 1)
-            if abs(phase_error) > abs(phase_error_history(1, 1))
-                phase_offset = phase_error_history(1, 2);
-            end
-            next_state = "Next Target Point";
-            next_measurements = next_kernel();
-            next_choice = "polar";
-
-            plot(conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index)), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0 0.4470 0.7410]);
-            hold on
-            plot_gain_circle(target_gain_states(Current_Calibration_Gain_Index));
-            measurementClass.plot_measurements(next_measurements, "polar");
-        else
-            next_state = "Phase Offset Control";
-            phase_offset = phase_offset + phase_error;
-            next_measurements(1, 1) = target_gain_states(Current_Calibration_Gain_Index);
-            next_measurements(1, 2) = target_phase_states(Current_Calibration_Phase_Index);
-            next_choice = "polar";
-        end
-
-        phase_error_history(2, :) = phase_error_history(1, :);
-        phase_error_history(1, :) =  [phase_error, phase_offset];
         
         
 

@@ -35,15 +35,58 @@ classdef conversionClass
 
 
 
-        function [gain_index, phase_index] = gain_phase_2_indexes_first_guess(gain, phase)
+%         function [gain_index, phase_index] = gain_phase_2_indexes_first_guess(gain, phase)
+%             global next_state
+%             if next_state == "Phase Offset Calibration"
+%                 phase_index = conversionClass.phase2index(phase);
+%                 gain_index = conversionClass.gain2index(gain, phase_index);
+%             else
+%                 compensated_phase = measurementClass.phase_offset_compensation(phase);
+%                 phase_index = conversionClass.phase2index(compensated_phase);
+%                 gain_index = conversionClass.gain2index(gain, phase_index);
+%             end
+%         end
 
-            compensated_phase = measurementClass.phase_offset_compensation(phase);
-            phase_index = conversionClass.phase2index(compensated_phase);
+
+
+         function [gain_index, phase_index] = gain_phase_2_indexes_first_guess(gain, phase)
+            global phase_profile num_actual_phase_states
+
+            maximum_phase = phase_profile(end, 2);
+            minimum_phase = phase_profile(1, 2);
+
+
+            if phase > maximum_phase
+                phase = phase - 2*pi;
+                if phase < minimum_phase
+                    N = [maximum_phase minimum_phase];
+                    [~, I] = min(abs(phase - N));
+                    phase = N(I);
+                end
+            elseif phase < minimum_phase
+                phase = phase + 2*pi;
+                if phase > maximum_phase
+                    N = [maximum_phase minimum_phase];
+                    [~, I] = min(abs(phase - N));
+                    phase = N(I);
+                end
+            end
+
+            phase_index = round(interp1(phase_profile(:, 2), phase_profile(:, 1), phase));
+
+            if phase_index < 1
+                phase_index = 1;
+            elseif phase_index > num_actual_phase_states
+                phase_index = num_actual_phase_states;
+            end
+
             gain_index = conversionClass.gain2index(gain, phase_index);
-        end
+
+         end
 
 
 
+         
         
         function [gain_index, phase_index] = gain_phase_2_indexes(gain, phase, gain_index_firstGuess)
             global phase_profile gain2phaseVariation num_actual_phase_states

@@ -23,10 +23,11 @@ classdef measurementClass
 % 
 %                 phase_index = conversionClass.phase2index(phase);
 %                 gain_index = conversionClass.gain2index(gain, phase_index);
-        
-                [gain_index, ~] = conversionClass.gain_phase_2_indexes_first_guess(next(1), next(2));
-                [gain_index, ~] = conversionClass.gain_phase_2_indexes(next(1), next(2), gain_index);
-                [gain_index, phase_index] = conversionClass.gain_phase_2_indexes(next(1), next(2), gain_index);
+
+                  [gain_index, ~] = conversionClass.gain_phase_2_indexes_first_guess(next(1), next(2));
+                  [gain_index, ~] = conversionClass.gain_phase_2_indexes(next(1), next(2), gain_index);
+                  [gain_index, phase_index] = conversionClass.gain_phase_2_indexes(next(1), next(2), gain_index);
+
 
                 %show_codeword(codeword);
             elseif choice == "index"
