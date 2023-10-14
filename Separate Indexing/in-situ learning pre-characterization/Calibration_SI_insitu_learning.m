@@ -1,22 +1,26 @@
-global num_target_gain_states num_target_phase_states Measurements Mapping Current_Calibration_Gain_Index Current_Calibration_Phase_Index target_gain_states ...
+global num_target_gain_states num_target_phase_states Measurements Mapping_SI Current_Calibration_Gain_Index Current_Calibration_Phase_Index target_gain_states ...
     target_phase_states  phase_error_criteria kernel_size target_phase_resolution RTPS_phase_resolution ...
      lowest_detectable_gain_dB  target_gain_states_dB phase_error_history RTPS_gain_resolution Selected_Measurements Current_Point_Iteration_Count original_kernel_size filter_tolerance Starting_Gain_Index Ending_Gain_Index...
     measurement_counter original_RTPS_gain_resolution num_actual_gain_states num_actual_phase_states gain_profile phase_profile gain2phaseVariation max_gain_measurement max_target_gain ...
      phase_offset target_gain_states_dB_normalized actual_phase_resolution actual_phase_states min_target_gain channel1_S21_38r5GHz total_measurement_counter kernel_offset channel2B_Channels_OFF_Atten_Phase VALIDATION num_hit total_num_hit...
-     phase_error_sum gain_error_sum LEARNING_SAMPLE_SIZE Adapted_MODEL ENABLE_OUTLINE_SAMPLING GAIN_PROFILE_SIZE USE_MACHINE_LEARNING SAMPLING_PATTERN EQUAL_SPACING_SAMPLING
+     phase_error_sum gain_error_sum LEARNING_SAMPLE_SIZE Adapted_MODEL ENABLE_OUTLINE_SAMPLING GAIN_PROFILE_SIZE USE_MACHINE_LEARNING SAMPLING_PATTERN EQUAL_SPACING_SAMPLING ENABLE_UNSUPERVISED_CALIBRATION_CHECK OUTLINE_PROFILE_SIZE...
+    max_phase_error max_gain_error
 
 %%
 VALIDATION = 1;
+ENABLE_UNSUPERVISED_CALIBRATION_CHECK = 1;  % if enabled, unsupervised calibration results will be checked by measurement
 PLOT_TARGET_POINTS = 1;
 
 
 %%
-USE_MACHINE_LEARNING = 1;
-SAMPLING_PATTERN = "uniform";    %choose "uniform", "woven" or "random"
+USE_MACHINE_LEARNING = 0;
+SAMPLING_PATTERN = "woven";    %choose "uniform", "woven" or "random"
 EQUAL_SPACING_SAMPLING = 1;
 LEARNING_SAMPLE_SIZE = 500;
-GAIN_PROFILE_SIZE = 10;
 ENABLE_OUTLINE_SAMPLING = 0;
+
+GAIN_PROFILE_SIZE = 10;
+OUTLINE_PROFILE_SIZE = 30;
 
 
 %%
@@ -58,6 +62,8 @@ max_target_gain = 0;
 
 phase_error_sum = 0;
 gain_error_sum = 0;
+max_phase_error = 0;
+max_gain_error = 0;
 
 phase_offset = 0;
 kernel_offset = 0;
@@ -80,7 +86,7 @@ original_kernel_size = kernel_size;
 
 
 gain_profile = zeros(GAIN_PROFILE_SIZE, 2);
-phase_profile = zeros(num_actual_phase_states, 2);
+phase_profile = zeros(OUTLINE_PROFILE_SIZE, 2);
 gain2phaseVariation = zeros(GAIN_PROFILE_SIZE, 2);
 max_gain_measurement = zeros(num_actual_phase_states, 1);
 max_target_gain = 0;
@@ -88,7 +94,7 @@ max_target_gain = 0;
 
 Measurements = zeros(num_actual_phase_states, num_actual_phase_states) + 1234;
 %Measurements_code = zeros(2, num_RTPS_phase_states^2*num_MODES);
-Mapping = zeros(num_target_gain_states, num_target_phase_states);
+Mapping_SI = zeros(num_target_gain_states, num_target_phase_states);
 
 Selected_Measurements = zeros(num_target_gain_states, num_target_phase_states);
 
@@ -158,23 +164,28 @@ end
 
 hold off
 
-if PLOT_TARGET_POINTS
-    for i = Starting_Gain_Index:1:Ending_Gain_Index
-        for j = 1:1:num_target_phase_states
-            plot(conversionClass.polar2cartesian(target_gain_states(i), target_phase_states(j))+0.000001*1i, "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0 0.4470 0.7410]);
-            hold on
+save("Mapping_SI.mat", "Mapping_SI");
+disp(" ");
+disp("Mapping saved to Mapping_SI.mat");
+
+if VALIDATION || ENABLE_UNSUPERVISED_CALIBRATION_CHECK
+    if PLOT_TARGET_POINTS
+        for i = Starting_Gain_Index:1:Ending_Gain_Index
+            for j = 1:1:num_target_phase_states
+                plot(conversionClass.polar2cartesian(target_gain_states(i), target_phase_states(j))+0.000001*1i, "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0 0.4470 0.7410]);
+                hold on
+            end
         end
     end
+    
+    plot(Selected_Measurements(Starting_Gain_Index:Current_Calibration_Gain_Index, :), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", "g");
+    hold on
+    plot_gain_circle(target_gain_states(Current_Calibration_Gain_Index));
+    hold off
+    xlim([-1*(target_gain_states(Current_Calibration_Gain_Index)+0.1) target_gain_states(Current_Calibration_Gain_Index)+0.1]);
+    ylim([-1*(target_gain_states(Current_Calibration_Gain_Index)+0.1) target_gain_states(Current_Calibration_Gain_Index)+0.1]);
+    drawnow
 end
-
-plot(Selected_Measurements(Starting_Gain_Index:Current_Calibration_Gain_Index, :), "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", "g");
-hold on
-plot_gain_circle(target_gain_states(Current_Calibration_Gain_Index));
-hold off
-xlim([-1*(target_gain_states(Current_Calibration_Gain_Index)+0.1) target_gain_states(Current_Calibration_Gain_Index)+0.1]);
-ylim([-1*(target_gain_states(Current_Calibration_Gain_Index)+0.1) target_gain_states(Current_Calibration_Gain_Index)+0.1]);
-drawnow
-
 
 
 
@@ -189,12 +200,12 @@ drawnow
 
 %%
 function [next_measurements, next_choice, next_state] = Calibration_FSM(current_measured_points, present_state)
-global phase_offset num_target_phase_states num_target_gain_states Mapping Current_Calibration_Gain_Index Current_Calibration_Phase_Index target_gain_states ...
+global phase_offset num_target_phase_states num_target_gain_states Mapping_SI Current_Calibration_Gain_Index Current_Calibration_Phase_Index target_gain_states ...
     target_phase_states phase_error_criteria phase_error_history Selected_Measurements Current_Point_Iteration_Count kernel_size original_kernel_size Starting_Gain_Index Ending_Gain_Index...
     num_actual_gain_states num_actual_phase_states gain_profile phase_profile gain2phaseVariation max_gain_measurement max_target_gain ...
     target_gain_states_dB_normalized target_gain_states_dB min_target_gain actual_gain_resolution actual_phase_resolution kernel_offset measurement_counter max_gain min_gain VALIDATION num_hit total_num_hit...
     LEARNING_SAMPLE_SIZE training_dataset TOTAL_SAMPLE GAIN_PROFILE_SIZE Adapted_MODEL ENABLE_OUTLINE_SAMPLING NUM_OUTLINE_SAMPLE USE_MACHINE_LEARNING SAMPLING_PATTERN ADJUSTED_LEARNING_SAMPLE_SIZE...
-    EQUAL_SPACING_SAMPLING
+    EQUAL_SPACING_SAMPLING ENABLE_UNSUPERVISED_CALIBRATION_CHECK OUTLINE_PROFILE_SIZE
 
 % next_phases is a N by 2 matrix where N is the number of phases to measured next and the 2 columns are phase 1 and phase 2.
 % current_measured_points is a N by 1 vector where N is the number of points in the current measurements.
@@ -212,10 +223,10 @@ switch present_state
 
 
             if SAMPLING_PATTERN == "random"
-                next_measurements(1 : num_actual_phase_states, 1) = num_actual_gain_states;
-                next_measurements(1 : num_actual_phase_states, 2) = transpose(linspace(1, num_actual_phase_states, num_actual_phase_states));
+                next_measurements(1 : OUTLINE_PROFILE_SIZE, 1) = num_actual_gain_states;
+                next_measurements(1 : OUTLINE_PROFILE_SIZE, 2) = transpose(round(linspace(1, num_actual_phase_states, OUTLINE_PROFILE_SIZE)));
     
-                NUM_OUTLINE_SAMPLE = num_actual_phase_states;
+                NUM_OUTLINE_SAMPLE = OUTLINE_PROFILE_SIZE;
                 ADJUSTED_LEARNING_SAMPLE_SIZE = LEARNING_SAMPLE_SIZE;
                 TOTAL_SAMPLE = NUM_OUTLINE_SAMPLE + ADJUSTED_LEARNING_SAMPLE_SIZE;
 
@@ -308,8 +319,8 @@ switch present_state
             gain_profile(:, 1) = transpose(round(linspace(1, num_actual_gain_states, GAIN_PROFILE_SIZE)));
             next_measurements(1:GAIN_PROFILE_SIZE, 1) = gain_profile(:, 1);
             next_measurements(1:GAIN_PROFILE_SIZE, 2) = 1;
-            next_measurements(GAIN_PROFILE_SIZE + 1:GAIN_PROFILE_SIZE + num_actual_phase_states, 1) = num_actual_gain_states;
-            next_measurements(GAIN_PROFILE_SIZE + 1:GAIN_PROFILE_SIZE + num_actual_phase_states, 2) = transpose(linspace(1, num_actual_phase_states, num_actual_phase_states));
+            next_measurements(GAIN_PROFILE_SIZE + 1:GAIN_PROFILE_SIZE + OUTLINE_PROFILE_SIZE, 1) = num_actual_gain_states;
+            next_measurements(GAIN_PROFILE_SIZE + 1:GAIN_PROFILE_SIZE + OUTLINE_PROFILE_SIZE, 2) = transpose(round(linspace(1, num_actual_phase_states, OUTLINE_PROFILE_SIZE)));
             next_choice = "index";
         end
             
@@ -323,8 +334,8 @@ switch present_state
         case "Gain and Phase Profile Characterization"
             gain_profile(:, 2) = abs(current_measured_points(1:GAIN_PROFILE_SIZE, 1));
     
-            phase_profile(:, 1) = transpose(linspace(1, num_actual_phase_states, num_actual_phase_states));
-            phase_profile(:, 2) = unwrap(angle(current_measured_points(GAIN_PROFILE_SIZE + 1:GAIN_PROFILE_SIZE + num_actual_phase_states, 1)));
+            phase_profile(:, 1) = transpose(round(linspace(1, num_actual_phase_states, OUTLINE_PROFILE_SIZE)));
+            phase_profile(:, 2) = unwrap(angle(current_measured_points(GAIN_PROFILE_SIZE + 1:GAIN_PROFILE_SIZE + OUTLINE_PROFILE_SIZE, 1)));
     
             gain2phaseVariation(:, 1) = gain_profile(:, 1);
             gain2phaseVariation(:, 2) = angle(current_measured_points(1:GAIN_PROFILE_SIZE, 1)) - angle(current_measured_points(GAIN_PROFILE_SIZE, 1));
@@ -344,7 +355,7 @@ switch present_state
             %figure
             %plot(current_measured_points(1:10, 1), "O")
     
-            max_gain_measurement = abs(current_measured_points(GAIN_PROFILE_SIZE + 1:GAIN_PROFILE_SIZE + num_actual_phase_states, 1));
+            max_gain_measurement = abs(current_measured_points(GAIN_PROFILE_SIZE + 1:GAIN_PROFILE_SIZE + OUTLINE_PROFILE_SIZE, 1));
             max_target_gain = min(max_gain_measurement);
             max_gain = max(max_gain_measurement);
             min_gain = abs(current_measured_points(1, 1));
@@ -362,7 +373,7 @@ switch present_state
     
             actual_gain_resolution = (max_target_gain - min_gain)/num_actual_gain_states;
             
-            max_target_gain = max_target_gain - 2*kernel_size*actual_gain_resolution;
+            max_target_gain = max_target_gain - 5*kernel_size*actual_gain_resolution;
             target_gain_states(end) = max_target_gain;
             target_gain_states_dB(end) = 20*log10(max_target_gain);
     
@@ -380,9 +391,21 @@ switch present_state
         
             measurement_counter = 0;
 
-            next_state = "Next Target Point";
-            next_measurements = next_kernel();
-            next_choice = "polar";
+
+            if VALIDATION || ENABLE_UNSUPERVISED_CALIBRATION_CHECK
+                next_state = "Next Target Point";
+                next_measurements = next_kernel();
+                next_choice = "polar";
+
+                plot(conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index)), 0, "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0 0.4470 0.7410]);
+                hold on
+                plot_gain_circle(target_gain_states(Current_Calibration_Gain_Index));
+                measurementClass.plot_measurements(next_measurements, "polar");
+            else
+                next_state = "Unsupervised Mapping Generation";
+                next_measurements = [];
+                next_choice = "";
+            end
     
             % scatter(real(polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(1))), imag(polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(1))));
             % hold on
@@ -467,7 +490,7 @@ switch present_state
         
         [Adapted_MODEL, tr] = train(Adapted_MODEL, shuffled_training_dataset_input, shuffled_training_dataset_output);
         
-        save Adapted_MODEL
+        save("Adapted_MODEL.mat", "Adapted_MODEL");
 
 
 
@@ -483,7 +506,7 @@ switch present_state
 
         actual_gain_resolution = (max_target_gain - min_gain)/num_actual_gain_states;
         
-        max_target_gain = max_target_gain - 2*kernel_size*actual_gain_resolution;
+        max_target_gain = max_target_gain - 5*kernel_size*actual_gain_resolution;
         target_gain_states(end) = max_target_gain;
         target_gain_states_dB(end) = 20*log10(max_target_gain);
 
@@ -501,14 +524,20 @@ switch present_state
     
         measurement_counter = 0;
 
-        next_state = "Next Target Point";
-        next_measurements = next_kernel();
-        next_choice = "model";
+        if VALIDATION || ENABLE_UNSUPERVISED_CALIBRATION_CHECK
+            next_state = "Next Target Point";
+            next_measurements = next_kernel();
+            next_choice = "model";
 
-        plot(conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index)), 0, "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0 0.4470 0.7410]);
-        hold on
-        plot_gain_circle(target_gain_states(Current_Calibration_Gain_Index));
-        measurementClass.plot_measurements(next_measurements, "polar");
+            plot(conversionClass.polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(Current_Calibration_Phase_Index)), 0, "O", "LineWidth", 1.5, "MarkerSize", 10, "MarkerFaceColor", [0 0.4470 0.7410]);
+            hold on
+            plot_gain_circle(target_gain_states(Current_Calibration_Gain_Index));
+            measurementClass.plot_measurements(next_measurements, "polar");
+        else
+            next_state = "Unsupervised Mapping Generation";
+            next_measurements = [];
+            next_choice = "";
+        end
 
         % scatter(real(polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(1))), imag(polar2cartesian(target_gain_states(Current_Calibration_Gain_Index), target_phase_states(1))));
         % hold on
@@ -581,8 +610,16 @@ switch present_state
             hold off
             
             Selected_Measurements(Current_Calibration_Gain_Index, Current_Calibration_Phase_Index) = closest_measured_point(1, 1);
-            %Mapping(Current_Calibration_Gain_Index, Current_Calibration_Phase_Index) = conversionClass.polar2code(closest_measured_point(2), closest_measured_point(3), selected_MODE, closest_measured_point(end));
+
+            if USE_MACHINE_LEARNING
+                [selected_gain_index, selected_phase_index] = conversionClass.model2index_SI(closest_measured_point(1, 2), closest_measured_point(1, 3));
+            else
+                [selected_gain_index, selected_phase_index] = conversionClass.polar2index_SI(closest_measured_point(1, 2), closest_measured_point(1, 3));
+            end
+
+            Mapping_SI(Current_Calibration_Gain_Index, Current_Calibration_Phase_Index) = conversionClass.index2code(selected_gain_index, selected_phase_index);
             
+
             if Current_Calibration_Phase_Index == num_target_phase_states
     
                 circle_report();
@@ -649,6 +686,33 @@ switch present_state
             plot_gain_circle(target_gain_states(Current_Calibration_Gain_Index));
             measurementClass.plot_measurements(next_measurements, "polar");
         end
+
+
+
+
+
+
+
+
+
+
+    case "Unsupervised Mapping Generation"
+
+        for target_gain_index = Starting_Gain_Index:1:Ending_Gain_Index
+            for target_phase_index = 1:1:num_target_phase_states
+                if USE_MACHINE_LEARNING
+                    [gain_index, phase_index] = conversionClass.model2index_SI(target_gain_states(target_gain_index), target_phase_states(target_phase_index));
+                else
+                    [gain_index, phase_index] = conversionClass.polar2index_SI(target_gain_states(target_gain_index), target_phase_states(target_phase_index));
+                end
+
+                Mapping_SI(target_gain_index, target_phase_index) = conversionClass.index2code(gain_index, phase_index);
+            end
+        end
+
+        next_state = "Finish Calibration";
+        next_measurements = [];
+        next_choice = "";
 
 
 
@@ -873,7 +937,7 @@ end
 
 function circle_report()
     global Current_Calibration_Gain_Index target_gain_states target_gain_states_dB target_phase_states Selected_Measurements measurement_counter total_measurement_counter Ending_Gain_Index Starting_Gain_Index phase_error_sum gain_error_sum...
-        VALIDATION num_hit total_num_hit num_target_phase_states total_RMS_phase_error_degree total_RMS_gain_error_dB
+        VALIDATION num_hit total_num_hit num_target_phase_states total_RMS_phase_error_degree total_RMS_gain_error_dB max_phase_error max_gain_error
     
         actual_phase = angle(Selected_Measurements(Current_Calibration_Gain_Index, :));
         
@@ -887,6 +951,15 @@ function circle_report()
         phase_error_sum = phase_error_sum + phase_RMS_error^2;
         gain_error_sum = gain_error_sum + gain_RMS_error^2;
     
+
+        if  max(abs(target_phase_states - actual_phase)) > max_phase_error
+            max_phase_error = max(abs(target_phase_states - actual_phase));
+        end
+
+        if max(abs(abs(Selected_Measurements(Current_Calibration_Gain_Index, :)) - target_gain_states(Current_Calibration_Gain_Index))) > max_gain_error
+            max_gain_error = max(abs(abs(Selected_Measurements(Current_Calibration_Gain_Index, :)) - target_gain_states(Current_Calibration_Gain_Index)));
+        end
+
         disp(" ");
         disp("Gain Circle " + Current_Calibration_Gain_Index + " at " + target_gain_states(Current_Calibration_Gain_Index) + " / " + target_gain_states_dB(Current_Calibration_Gain_Index) + " dB");
         disp("RMS Phase Error: " + phase_RMS_error + " / " + phase_RMS_error*180/pi + " degrees");
@@ -909,11 +982,16 @@ function circle_report()
 
             total_RMS_phase_error_degree = total_RMS_phase_error*180/pi;
             total_RMS_gain_error_dB = 20*log10(total_RMS_gain_error);
+
+            max_phase_error_degree = max_phase_error*180/pi;
+            max_gain_error_dB = 10*log10(max_gain_error);
     
             disp(" ");
             disp("Calibration finish");
             disp("Total RMS Phase Error: " + total_RMS_phase_error + " / " + total_RMS_phase_error_degree + " degrees");
+            disp("Peak Phase Error: " + max_phase_error + " / " + max_phase_error_degree + " degrees");
             disp("Total RMS Gain Error: " + total_RMS_gain_error + " / " + total_RMS_gain_error_dB + " dB");
+            disp("Peak Gain Error: " + max_gain_error + " / " + max_gain_error_dB + " dB");
             
             if ~VALIDATION
                 total_hit_rate = total_num_hit/(num_target_phase_states*(Ending_Gain_Index - Starting_Gain_Index + 1))*100;

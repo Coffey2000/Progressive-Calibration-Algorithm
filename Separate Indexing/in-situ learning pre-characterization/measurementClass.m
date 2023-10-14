@@ -7,6 +7,7 @@ classdef measurementClass
         
             if size(next, 1) == 0
                 reading = [];
+                return
             
             elseif choice == "traditional"
                 target_point = conversionClass.polar2cartesian(next(1), next(2));
@@ -16,70 +17,21 @@ classdef measurementClass
                 return
 
             elseif choice == "polar"
-%                 gain = next(1);
-%                 phase = next(2);
-                
-%                 phase = measurementClass.phase_offset_compensation(next(2));
-% 
-%                 phase_index = conversionClass.phase2index(phase);
-%                 gain_index = conversionClass.gain2index(gain, phase_index);
+                [gain_index, phase_index] = conversionClass.polar2index_SI(next(1), next(2));
 
-                  [gain_index, ~] = conversionClass.gain_phase_2_indexes_first_guess(next(1), next(2));
-                  [gain_index, ~] = conversionClass.gain_phase_2_indexes(next(1), next(2), gain_index);
-                  [gain_index, phase_index] = conversionClass.gain_phase_2_indexes(next(1), next(2), gain_index);
-
-
-                %show_codeword(codeword);
             elseif choice == "index"
                 gain_index = next(1);
                 phase_index = next(2);
                 
+                gain_index = conversionClass.cap(gain_index, 1, num_actual_gain_states);
+                phase_index = conversionClass.cap(phase_index, 1, num_actual_phase_states);
             elseif choice == "model"
-            %    normalized_gain = next(1)/max_gain;
-            %    normalized_phase = conversionClass.wrap22pi(next(2))/(2*pi);
-
-            %    model_output = Adapted_MODEL([normalized_gain; normalized_phase]);
-
-            %    normalized_gain_index = model_output(1, 1);
-            %    normalized_phase_index = model_output(2, 1);
-
-            %    gain_index = round(1 + (num_actual_gain_states - 1)*normalized_gain_index);
-            %    phase_index = round(1 + (num_actual_phase_states - 1)*normalized_phase_index);
-
-                [normalized_real, normalized_imag] = conversionClass.polar2rec(next(1)/max_gain, next(2));
-
-                model_output = Adapted_MODEL([normalized_real; normalized_imag]);
-
-                normalized_real_index = model_output(1, 1);
-                normalized_imag_index = model_output(2, 1);
-
-                normalized_index_cartesian_point = normalized_real_index + 1i*normalized_imag_index;
-                normalized_gain_index = abs(normalized_index_cartesian_point);
-                twopi_normalized_phase_index = conversionClass.wrap22pi(angle(normalized_index_cartesian_point));
-
-%                 normalized_gain_index = sqrt(normalized_real_index^2 + normalized_imag_index^2);
-%                 twopi_normalized_phase_index = atan(normalized_imag_index/normalized_real_index);
-
-                normalized_phase_index = twopi_normalized_phase_index/(2*pi - actual_phase_resolution);
-                
-                gain_index = conversionClass.parameter_denormalization(normalized_gain_index, 1, num_actual_gain_states);
-                phase_index = conversionClass.parameter_denormalization(normalized_phase_index, 1, num_actual_phase_states);
+                [gain_index, phase_index] = conversionClass.model2index_SI(next(1), next(2));
             else
                 disp("Error: Invalid choise of measurement");
             end
             
-            
-            if gain_index < 1
-                gain_index = 1;
-            elseif gain_index > num_actual_gain_states
-                gain_index = num_actual_gain_states;
-            end
-
-            if phase_index < 1
-                phase_index = 1;
-            elseif phase_index > num_actual_phase_states
-                phase_index = num_actual_phase_states;
-            end
+        
 
             %gain_index = num_actual_gain_states - gain_index + 1;
             previous_measurement = Measurements(gain_index, phase_index);

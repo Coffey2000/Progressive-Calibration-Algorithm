@@ -1,25 +1,64 @@
 classdef conversionClass
     methods (Static)
 
-        function code = polar2code_SI(gain, phase)
+        function [gain_index, phase_index] = model2index_SI(gain, phase)
+            global Adapted_MODEL max_gain num_actual_gain_states num_actual_phase_states actual_phase_resolution
+
+            [normalized_real, normalized_imag] = conversionClass.polar2rec(gain/max_gain, phase);
+
+            model_output = Adapted_MODEL([normalized_real; normalized_imag]);
+
+            normalized_real_index = model_output(1, 1);
+            normalized_imag_index = model_output(2, 1);
+
+            normalized_index_cartesian_point = normalized_real_index + 1i*normalized_imag_index;
+            normalized_gain_index = abs(normalized_index_cartesian_point);
+            twopi_normalized_phase_index = conversionClass.wrap22pi(angle(normalized_index_cartesian_point));
+
+            normalized_phase_index = twopi_normalized_phase_index/(2*pi - actual_phase_resolution);
+            
+            gain_index = conversionClass.parameter_denormalization(normalized_gain_index, 1, num_actual_gain_states);
+            phase_index = conversionClass.parameter_denormalization(normalized_phase_index, 1, num_actual_phase_states);
+
+            gain_index = conversionClass.cap(gain_index, 1, num_actual_gain_states);
+            phase_index = conversionClass.cap(phase_index, 1, num_actual_phase_states);
+        end
+
+
+
+        function [gain_index, phase_index] = polar2index_SI(gain, phase)
             global num_actual_gain_states num_actual_phase_states
             [gain_index, ~] = conversionClass.gain_phase_2_indexes_first_guess(gain, phase);
             [gain_index, ~] = conversionClass.gain_phase_2_indexes(gain, phase, gain_index);
             [gain_index, phase_index] = conversionClass.gain_phase_2_indexes(gain, phase, gain_index);
 
-            if gain_index < 1
-                gain_index = 1;
-            elseif gain_index > num_actual_gain_states
-                gain_index = num_actual_gain_states;
-            end
+            gain_index = conversionClass.cap(gain_index, 1, num_actual_gain_states);
+            phase_index = conversionClass.cap(phase_index, 1, num_actual_phase_states);
+        end
 
-            if phase_index < 1
-                phase_index = 1;
-            elseif phase_index > num_actual_phase_states
-                phase_index = num_actual_phase_states;
-            end
 
+
+        function code = index2code(gain_index, phase_index)
             code = gain_index*1000 + phase_index;
+        end
+
+
+
+        function [gain_index, phase_index] = code2index(code)
+            gain_index = floor(code/1000);
+            phase_index = code - gain_index*1000;
+        end
+
+
+        
+        function index = cap(pre_cap_index, start, ending)
+            if pre_cap_index < start
+                index = start;
+            elseif pre_cap_index > ending
+                index = ending;
+            else
+                index = pre_cap_index;
+            end
         end
 
 
@@ -48,11 +87,13 @@ classdef conversionClass
 
 
         function index = gain2index(gain, compensated_phase_index)
-            global gain_profile max_gain_measurement min_gain
+            global gain_profile max_gain_measurement num_actual_phase_states num_actual_gain_states OUTLINE_PROFILE_SIZE
             
-            %gain_scaling = (max_gain_measurement(compensated_phase_index, 1) - min_gain)/(max_gain_measurement(1, 1) - min_gain);
-            gain_scaling = max_gain_measurement(compensated_phase_index, 1)/max_gain_measurement(1, 1);
+            gain_scaling = interp1(round(linspace(1, num_actual_phase_states, OUTLINE_PROFILE_SIZE)), max_gain_measurement(:), compensated_phase_index)/max_gain_measurement(1, 1);
+            %gain_scaling = max_gain_measurement(compensated_phase_index, 1)/max_gain_measurement(1, 1);
             index = round(interp1(gain_profile(:, 2)*gain_scaling, gain_profile(:, 1), gain));
+
+            index = conversionClass.cap(index, 1, num_actual_gain_states);
         end
 
 
