@@ -157,7 +157,7 @@ classdef conversionClass
 
             phaseVariation = interp1(gain2phaseVariation(:, 1), gain2phaseVariation(:, 2), gain_index_firstGuess);
             
-            adjusted_phase_profile = zeros(num_actual_phase_states, 2);
+            adjusted_phase_profile = zeros(size(phase_profile, 1), 2);
             adjusted_phase_profile(:, 1) = phase_profile(:, 1);
             adjusted_phase_profile(:, 2) = phase_profile(:, 2) + phaseVariation;
 

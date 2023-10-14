@@ -6,6 +6,8 @@ global num_target_gain_states num_target_phase_states Measurements Mapping_SI Cu
      phase_error_sum gain_error_sum LEARNING_SAMPLE_SIZE Adapted_MODEL ENABLE_OUTLINE_SAMPLING GAIN_PROFILE_SIZE USE_MACHINE_LEARNING SAMPLING_PATTERN EQUAL_SPACING_SAMPLING ENABLE_UNSUPERVISED_CALIBRATION_CHECK...
      OUTLINE_PROFILE_SIZE max_phase_error max_gain_error
 
+warning ("off", "all");
+
 tic;
 measurementClass.measurementSetup();
 
@@ -16,7 +18,7 @@ PLOT_TARGET_POINTS = 1;
 
 
 %%
-USE_MACHINE_LEARNING = 0;
+USE_MACHINE_LEARNING = 1;
 SAMPLING_PATTERN = "woven";    %choose "uniform", "woven" or "random"
 EQUAL_SPACING_SAMPLING = 1;
 LEARNING_SAMPLE_SIZE = 500;
@@ -140,6 +142,9 @@ end
 hold off
 
 save("Mapping_SI.mat", "Mapping_SI");
+
+disp(" ");
+disp("Saved mapping to Mapping_SI.mat");
 
 if VALIDATION || ENABLE_UNSUPERVISED_CALIBRATION_CHECK
     if PLOT_TARGET_POINTS
