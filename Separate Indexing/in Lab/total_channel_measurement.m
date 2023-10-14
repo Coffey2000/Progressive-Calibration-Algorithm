@@ -26,7 +26,7 @@ Pna = pna('Set_PNA_Parameters2');
 en = [1 1 1 0]    ; %RF1, RF2, RF3, RF4 (0 or 1)
 tic;
 for gain_index = 1:1:256
-    for phase_index = 1:1:256
+    for phase_index = 1:1:2
         phase = [0 0 0 (phase_index-1)]    ; %RF1, RF2, RF3, RF4 (0 to 255)
         atten = [0 0 0 (gain_index-1)]  ; %RF1, RF2, RF3, RF4 (0 to 255)
         
@@ -36,7 +36,7 @@ for gain_index = 1:1:256
     end
 end
 time = toc;
-disp("S21 Measurement time: " + time);
+disp("S41 Measurement time: " + time);
 
 save("channel_readings_38GHz.mat", "channel_readings_38GHz");
 
