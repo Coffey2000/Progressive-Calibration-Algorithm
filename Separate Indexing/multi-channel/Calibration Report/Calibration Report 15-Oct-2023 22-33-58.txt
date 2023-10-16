@@ -1,0 +1,129 @@
+Starting Unsupervised Calibration with kernel size of 1
+Number of channels: 2
+Calibrating for 1 to 8 out of 12 gain circles
+ENABLE_UNSUPERVISED_CALIBRATION_CHECK = 1
+ 
+ 
+Starting channel 1 characterization using Machine Learning
+Using woven sampling pattern
+EQUAL_SPACING_SAMPLING = 1
+LEARNING_SAMPLE_SIZE = 200
+Learning sample size after adjustment: 256
+Disable EQUAL_SPACING_SAMPLING for closer learning sample size to the set value.
+ 
+Channel 1 training finish
+Pre-characterization measurements: 256
+ 
+Gain Circle 1 at 1.6778 / 4.4946 dB
+RMS Phase Error: 0.019451 / 1.1144 degrees
+RMS Gain Error: 0.050998 / -25.8489 dB
+Hit rate: 73.4375%
+ 
+Gain Circle 2 at 1.8825 / 5.4946 dB
+RMS Phase Error: 0.020242 / 1.1598 degrees
+RMS Gain Error: 0.048401 / -26.3029 dB
+Hit rate: 68.75%
+ 
+Gain Circle 3 at 2.1122 / 6.4946 dB
+RMS Phase Error: 0.019418 / 1.1125 degrees
+RMS Gain Error: 0.046668 / -26.6196 dB
+Hit rate: 71.875%
+ 
+Gain Circle 4 at 2.3699 / 7.4946 dB
+RMS Phase Error: 0.021197 / 1.2145 degrees
+RMS Gain Error: 0.053156 / -25.4889 dB
+Hit rate: 60.9375%
+ 
+Gain Circle 5 at 2.6591 / 8.4946 dB
+RMS Phase Error: 0.021529 / 1.2335 degrees
+RMS Gain Error: 0.058616 / -24.6397 dB
+Hit rate: 51.5625%
+ 
+Gain Circle 6 at 2.9835 / 9.4946 dB
+RMS Phase Error: 0.019412 / 1.1122 degrees
+RMS Gain Error: 0.05976 / -24.4718 dB
+Hit rate: 53.125%
+ 
+Gain Circle 7 at 3.3476 / 10.4946 dB
+RMS Phase Error: 0.016704 / 0.95704 degrees
+RMS Gain Error: 0.058365 / -24.6769 dB
+Hit rate: 48.4375%
+ 
+Gain Circle 8 at 3.756 / 11.4946 dB
+RMS Phase Error: 0.014585 / 0.83565 degrees
+RMS Gain Error: 0.064204 / -23.8487 dB
+Hit rate: 45.3125%
+ 
+Channel 1 Calibration Finish
+Total RMS Phase Error: 0.019191 / 1.0996 degrees
+Peak Phase Error: 0.058845 / 3.3716 degrees
+Total RMS Gain Error: 0.05532 / -25.1423 dB
+Peak Gain Error: 0.16639 / -7.7886 dB
+Total hit rate: 59.1797%
+Total number of measurements for 8 gain circles: 256
+ 
+ 
+ 
+Starting channel 2 characterization using Machine Learning
+Using woven sampling pattern
+EQUAL_SPACING_SAMPLING = 1
+SUPPLEMENT_LEARNING_SAMPLE_SIZE = 200
+Learning sample size after adjustment: 256
+Disable EQUAL_SPACING_SAMPLING for closer learning sample size to the set value.
+ 
+Channel 2 training finish
+Pre-characterization measurements: 256
+ 
+Gain Circle 1 at 1.6778 / 4.4946 dB
+RMS Phase Error: 0.02234 / 1.28 degrees
+RMS Gain Error: 0.04023 / -27.909 dB
+Hit rate: 78.125%
+ 
+Gain Circle 2 at 1.8825 / 5.4946 dB
+RMS Phase Error: 0.019905 / 1.1405 degrees
+RMS Gain Error: 0.037422 / -28.5375 dB
+Hit rate: 78.125%
+ 
+Gain Circle 3 at 2.1122 / 6.4946 dB
+RMS Phase Error: 0.021646 / 1.2402 degrees
+RMS Gain Error: 0.036928 / -28.6529 dB
+Hit rate: 75%
+ 
+Gain Circle 4 at 2.3699 / 7.4946 dB
+RMS Phase Error: 0.022865 / 1.3101 degrees
+RMS Gain Error: 0.040485 / -27.8541 dB
+Hit rate: 62.5%
+ 
+Gain Circle 5 at 2.6591 / 8.4946 dB
+RMS Phase Error: 0.022535 / 1.2912 degrees
+RMS Gain Error: 0.049001 / -26.1959 dB
+Hit rate: 50%
+ 
+Gain Circle 6 at 2.9835 / 9.4946 dB
+RMS Phase Error: 0.022089 / 1.2656 degrees
+RMS Gain Error: 0.057651 / -24.7838 dB
+Hit rate: 45.3125%
+ 
+Gain Circle 7 at 3.3476 / 10.4946 dB
+RMS Phase Error: 0.01957 / 1.1213 degrees
+RMS Gain Error: 0.065367 / -23.6929 dB
+Hit rate: 53.125%
+ 
+Gain Circle 8 at 3.756 / 11.4946 dB
+RMS Phase Error: 0.019473 / 1.1157 degrees
+RMS Gain Error: 0.071496 / -22.9143 dB
+Hit rate: 42.1875%
+ 
+Channel 2 Calibration Finish
+Total RMS Phase Error: 0.028703 / 1.6446 degrees
+Peak Phase Error: 0.058845 / 3.3716 degrees
+Total RMS Gain Error: 0.07551 / -22.4399 dB
+Peak Gain Error: 0.2194 / -6.5877 dB
+Total hit rate: 119.7266%
+Total number of measurements for 8 gain circles: 256
+ 
+Array Calibration Finish
+Total number of measurements for 2 channels: 512
+ 
+ 
+Mapping saved to Mapping_SI.mat

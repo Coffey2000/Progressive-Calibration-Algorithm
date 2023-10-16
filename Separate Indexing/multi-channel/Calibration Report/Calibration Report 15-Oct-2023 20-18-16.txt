@@ -1,0 +1,70 @@
+Starting Unsupervised Calibration with kernel size of 1
+In Performance Mode: no plots will be shown.
+Number of channels: 2
+Calibrating for 1 to 8 out of 12 gain circles
+ENABLE_UNSUPERVISED_CALIBRATION_CHECK = 1
+ 
+ 
+Starting channel 1 characterization using Point Translation Algorithm
+GAIN_PROFILE_SIZE = 10
+OUTLINE_PROFILE_SIZE = 30
+ 
+Channel 1 characterization finish
+Pre-characterization measurements: 39
+ 
+Gain Circle 1 at 1.6778 / 4.4946 dB
+RMS Phase Error: 0.036717 / 2.1037 degrees
+RMS Gain Error: 0.0449 / -26.9551 dB
+Hit rate: 45.3125%
+ 
+Gain Circle 2 at 1.8825 / 5.4946 dB
+RMS Phase Error: 0.035349 / 2.0253 degrees
+RMS Gain Error: 0.050336 / -25.9624 dB
+Hit rate: 40.625%
+ 
+Gain Circle 3 at 2.1122 / 6.4946 dB
+RMS Phase Error: 0.035049 / 2.0081 degrees
+RMS Gain Error: 0.057973 / -24.7354 dB
+Hit rate: 32.8125%
+ 
+Gain Circle 4 at 2.3699 / 7.4946 dB
+RMS Phase Error: 0.031836 / 1.8241 degrees
+RMS Gain Error: 0.059628 / -24.491 dB
+Hit rate: 32.8125%
+ 
+Gain Circle 5 at 2.6591 / 8.4946 dB
+RMS Phase Error: 0.030948 / 1.7732 degrees
+RMS Gain Error: 0.067702 / -23.388 dB
+Hit rate: 28.125%
+ 
+Gain Circle 6 at 2.9835 / 9.4946 dB
+RMS Phase Error: 0.029018 / 1.6626 degrees
+RMS Gain Error: 0.072763 / -22.7618 dB
+Hit rate: 25%
+ 
+Gain Circle 7 at 3.3476 / 10.4946 dB
+RMS Phase Error: 0.026207 / 1.5016 degrees
+RMS Gain Error: 0.075454 / -22.4464 dB
+Hit rate: 23.4375%
+ 
+Gain Circle 8 at 3.756 / 11.4946 dB
+RMS Phase Error: 0.021766 / 1.2471 degrees
+RMS Gain Error: 0.084916 / -21.4202 dB
+Hit rate: 23.4375%
+ 
+Channel 1 Calibration Finish
+Total RMS Phase Error: 0.031225 / 1.7891 degrees
+Peak Phase Error: 0.074996 / 4.297 degrees
+Total RMS Gain Error: 0.065429 / -23.6845 dB
+Peak Gain Error: 0.16166 / -7.9139 dB
+Total hit rate: 31.4453%
+Total number of measurements for 8 gain circles: 39
+ 
+ 
+ 
+Starting channel 2 characterization using Point Translation Algorithm
+GAIN_PROFILE_SIZE = 10
+OUTLINE_PROFILE_SIZE = 30
+ 
+Channel 2 characterization finish
+Pre-characterization measurements: 39

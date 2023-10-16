@@ -36,11 +36,12 @@ classdef measurementClass
 
 
 
-        function reading = measure(next, choice)
-        global Measurements measurement_counter total_measurement_counter channel1_S21_38r5GHz_phaseCorrected channel1_S21_38r5GHz ...
-        Adapted_MODEL max_gain num_actual_gain_states num_actual_phase_states channel2B_Channels_OFF_Atten_Phase actual_phase_resolution...
-        array Pna
         
+        function reading = measure(next, choice)
+            global Measurements measurement_counter total_channel_measurement_counter ...
+            num_actual_gain_states num_actual_phase_states channel2B_Channels_OFF_Atten_Phase...
+            LOG_FILE_NAME Current_Calibration_Channel_Index array Pna
+            
             if size(next, 1) == 0
                 reading = [];
                 return
@@ -65,31 +66,42 @@ classdef measurementClass
                 [gain_index, phase_index] = conversionClass.model2index_SI(next(1), next(2));
             else
                 disp("Error: Invalid choise of measurement");
+                writelines("Error: Invalid choise of measurement", LOG_FILE_NAME, WriteMode="append")
             end
+                
             
-
 
             %gain_index = num_actual_gain_states - gain_index + 1;
-            previous_measurement = Measurements(gain_index, phase_index);
+            previous_measurement = Measurements(gain_index, phase_index, Current_Calibration_Channel_Index);
             
             if previous_measurement == 1234
-                
-                phase       = [0 (phase_index-1) 0 0]    ; %RF1, RF2, RF3, RF4 (0 to 255)
-                atten       = [0 (gain_index-1) 0 0]  ; %RF1, RF2, RF3, RF4 (0 to 255)
-                en          = [1 0 1 1]    ; %RF1, RF2, RF3, RF4 (0 or 1)
-                
-                
+            
+                switch Current_Calibration_Channel_Index
+                    case 1
+                        phase       = [0 (phase_index-1) 0 0]    ; %RF1, RF2, RF3, RF4 (0 to 255)
+                        atten       = [0 (gain_index-1) 0 0]  ; %RF1, RF2, RF3, RF4 (0 to 255)
+                        en          = [1 0 1 1]    ; %RF1, RF2, RF3, RF4 (0 or 1)
+                        
+                    case 2
+                        Pna = pna('Set_PNA_Parameters2');
+
+                        phase       = [0 0 0 (phase_index-1)]    ; %RF1, RF2, RF3, RF4 (0 to 255)
+                        atten       = [0 0 0 (gain_index-1)]  ; %RF1, RF2, RF3, RF4 (0 to 255)
+                        en          = [1 1 1 0]    ; %RF1, RF2, RF3, RF4 (0 or 1)
+                    otherwise
+                end
+
                 [array, readData] = array.setBW0(phase, atten, en);
                 
                 reading = Pna.getSParameters;
-                
-                Measurements(gain_index, phase_index) = reading;
+            
+                Measurements(gain_index, phase_index, Current_Calibration_Channel_Index) = reading;
                 measurement_counter = measurement_counter + 1;
-                total_measurement_counter = total_measurement_counter + 1;
+                total_channel_measurement_counter = total_channel_measurement_counter + 1;
             else
                 reading = previous_measurement;
             end
-        end
+    end
         
         
         

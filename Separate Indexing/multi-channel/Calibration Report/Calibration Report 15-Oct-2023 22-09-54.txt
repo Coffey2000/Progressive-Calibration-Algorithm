@@ -1,0 +1,40 @@
+Starting Unsupervised Calibration with kernel size of 1
+Number of channels: 2
+Calibrating for 1 to 8 out of 12 gain circles
+ENABLE_UNSUPERVISED_CALIBRATION_CHECK = 1
+ 
+ 
+Starting channel 1 characterization using Machine Learning
+Using woven sampling pattern
+EQUAL_SPACING_SAMPLING = 1
+LEARNING_SAMPLE_SIZE = 500
+Learning sample size after adjustment: 512
+Disable EQUAL_SPACING_SAMPLING for closer learning sample size to the set value.
+ 
+Channel 1 training finish
+Pre-characterization measurements: 512
+ 
+Gain Circle 1 at 1.6773 / 4.492 dB
+RMS Phase Error: 0.047779 / 2.7375 degrees
+RMS Gain Error: 0.075365 / -22.4566 dB
+Hit rate: 26.5625%
+ 
+Gain Circle 2 at 1.8819 / 5.492 dB
+RMS Phase Error: 0.038464 / 2.2038 degrees
+RMS Gain Error: 0.076295 / -22.35 dB
+Hit rate: 21.875%
+ 
+Gain Circle 3 at 2.1116 / 6.492 dB
+RMS Phase Error: 0.032682 / 1.8726 degrees
+RMS Gain Error: 0.07587 / -22.3986 dB
+Hit rate: 18.75%
+ 
+Gain Circle 4 at 2.3692 / 7.492 dB
+RMS Phase Error: 0.029934 / 1.7151 degrees
+RMS Gain Error: 0.076574 / -22.3183 dB
+Hit rate: 20.3125%
+ 
+Gain Circle 5 at 2.6583 / 8.492 dB
+RMS Phase Error: 0.032886 / 1.8842 degrees
+RMS Gain Error: 0.079706 / -21.9702 dB
+Hit rate: 18.75%

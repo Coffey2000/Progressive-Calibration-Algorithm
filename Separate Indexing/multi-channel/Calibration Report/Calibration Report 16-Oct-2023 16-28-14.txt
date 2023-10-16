@@ -1,0 +1,9 @@
+Starting Supervised Calibration with kernel size of 1
+Number of channels: 2
+CHANNEL_TRANSFORMATION = 1
+Calibrating for 1 to 8 out of 12 gain circles
+ 
+ 
+Starting channel 1 characterization using Point Translation Algorithm
+GAIN_PROFILE_SIZE = 10
+OUTLINE_PROFILE_SIZE = 30

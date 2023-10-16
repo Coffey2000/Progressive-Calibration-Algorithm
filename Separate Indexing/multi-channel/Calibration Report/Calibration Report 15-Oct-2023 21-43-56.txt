@@ -1,0 +1,80 @@
+Starting Unsupervised Calibration with kernel size of 1
+Number of channels: 2
+Calibrating for 1 to 8 out of 12 gain circles
+ENABLE_UNSUPERVISED_CALIBRATION_CHECK = 1
+ 
+ 
+Starting channel 1 characterization using Machine Learning
+Using woven sampling pattern
+EQUAL_SPACING_SAMPLING = 1
+LEARNING_SAMPLE_SIZE = 500
+Learning sample size after adjustment: 512
+Disable EQUAL_SPACING_SAMPLING for closer learning sample size to the set value.
+ 
+Channel 1 training finish
+Pre-characterization measurements: 512
+ 
+Gain Circle 1 at 1.6773 / 4.492 dB
+RMS Phase Error: 0.026318 / 1.5079 degrees
+RMS Gain Error: 0.055929 / -25.0472 dB
+Hit rate: 57.8125%
+ 
+Gain Circle 2 at 1.8819 / 5.492 dB
+RMS Phase Error: 0.025359 / 1.453 degrees
+RMS Gain Error: 0.04958 / -26.0938 dB
+Hit rate: 60.9375%
+ 
+Gain Circle 3 at 2.1116 / 6.492 dB
+RMS Phase Error: 0.022796 / 1.3061 degrees
+RMS Gain Error: 0.043514 / -27.2274 dB
+Hit rate: 67.1875%
+ 
+Gain Circle 4 at 2.3692 / 7.492 dB
+RMS Phase Error: 0.018729 / 1.0731 degrees
+RMS Gain Error: 0.043078 / -27.315 dB
+Hit rate: 59.375%
+ 
+Gain Circle 5 at 2.6583 / 8.492 dB
+RMS Phase Error: 0.016873 / 0.96673 degrees
+RMS Gain Error: 0.044784 / -26.9775 dB
+Hit rate: 73.4375%
+ 
+Gain Circle 6 at 2.9826 / 9.492 dB
+RMS Phase Error: 0.016157 / 0.92574 degrees
+RMS Gain Error: 0.051096 / -25.8323 dB
+Hit rate: 62.5%
+ 
+Gain Circle 7 at 3.3466 / 10.492 dB
+RMS Phase Error: 0.014762 / 0.84579 degrees
+RMS Gain Error: 0.054098 / -25.3363 dB
+Hit rate: 62.5%
+ 
+Gain Circle 8 at 3.7549 / 11.492 dB
+RMS Phase Error: 0.014272 / 0.81772 degrees
+RMS Gain Error: 0.055439 / -25.1236 dB
+Hit rate: 51.5625%
+ 
+Channel 1 Calibration Finish
+Total RMS Phase Error: 0.019917 / 1.1412 degrees
+Peak Phase Error: 0.067689 / 3.8783 degrees
+Total RMS Gain Error: 0.04994 / -26.031 dB
+Peak Gain Error: 0.13181 / -8.8004 dB
+Total hit rate: 61.9141%
+Total number of measurements for 8 gain circles: 512
+ 
+ 
+ 
+Starting channel 2 characterization using Machine Learning
+Using woven sampling pattern
+EQUAL_SPACING_SAMPLING = 1
+SUPPLEMENT_LEARNING_SAMPLE_SIZE = 100
+Learning sample size after adjustment: 128
+Disable EQUAL_SPACING_SAMPLING for closer learning sample size to the set value.
+ 
+Channel 2 training finish
+Pre-characterization measurements: 128
+ 
+Gain Circle 1 at 1.6773 / 4.492 dB
+RMS Phase Error: 0.49589 / 28.4125 degrees
+RMS Gain Error: 0.23856 / -12.4479 dB
+Hit rate: 0%

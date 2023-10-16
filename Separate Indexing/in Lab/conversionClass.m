@@ -1,12 +1,33 @@
 classdef conversionClass
     methods (Static)
 
+
+        function phaseDiff = phaseDifference(point1, point2)
+            phaseDiff1 = angle(point1) - angle(point2);
+            phaseDiff2 = conversionClass.wrap22pi(angle(point1)) - conversionClass.wrap22pi(angle(point2));
+        
+            [~, I] = min([abs(phaseDiff1) abs(phaseDiff2)]);
+        
+            if I == 1
+                phaseDiff = phaseDiff1;
+            else
+                phaseDiff = phaseDiff2;
+            end
+        end
+        
+
+
         function [gain_index, phase_index] = model2index_SI(gain, phase)
-            global Adapted_MODEL max_gain num_actual_gain_states num_actual_phase_states actual_phase_resolution
+            global MODEL Channel_Adapted_MODEL max_gain num_actual_gain_states num_actual_phase_states actual_phase_resolution...
+                CHANNEL_TRANSFORMATION Current_Calibration_Channel_Index
 
             [normalized_real, normalized_imag] = conversionClass.polar2rec(gain/max_gain, phase);
 
-            model_output = Adapted_MODEL([normalized_real; normalized_imag]);
+            if Current_Calibration_Channel_Index == 1 || ~CHANNEL_TRANSFORMATION
+                model_output = MODEL([normalized_real; normalized_imag]);
+            else
+                model_output = Channel_Adapted_MODEL([normalized_real; normalized_imag]);
+            end
 
             normalized_real_index = model_output(1, 1);
             normalized_imag_index = model_output(2, 1);
