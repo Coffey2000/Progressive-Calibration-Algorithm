@@ -1,0 +1,129 @@
+Starting Supervised Calibration with kernel size of 1
+In Performance Mode: no plots will be shown.
+Number of channels: 2
+CHANNEL_TRANSFORMATION = 1
+Calibrating for 1 to 8 out of 12 gain circles
+ 
+ 
+Starting channel 1 characterization using Machine Learning
+Using uniform sampling pattern
+EQUAL_SPACING_SAMPLING = 0
+LEARNING_SAMPLE_SIZE = 300
+Learning sample size after adjustment: 306
+ 
+Channel 1 training finish
+Pre-characterization measurements: 306
+ 
+Gain Circle 1 at 1.6806 / 4.5092 dB
+RMS Phase Error: 0.015907 / 0.91138 degrees
+RMS Gain Error: 0.029229 / -30.6837 dB
+Number of new measurements: 94
+ 
+Gain Circle 2 at 1.8856 / 5.5092 dB
+RMS Phase Error: 0.013986 / 0.80131 degrees
+RMS Gain Error: 0.027054 / -31.3553 dB
+Number of new measurements: 99
+ 
+Gain Circle 3 at 2.1157 / 6.5092 dB
+RMS Phase Error: 0.012759 / 0.73102 degrees
+RMS Gain Error: 0.025767 / -31.7786 dB
+Number of new measurements: 100
+ 
+Gain Circle 4 at 2.3739 / 7.5092 dB
+RMS Phase Error: 0.013225 / 0.75774 degrees
+RMS Gain Error: 0.023525 / -32.5694 dB
+Number of new measurements: 98
+ 
+Gain Circle 5 at 2.6635 / 8.5092 dB
+RMS Phase Error: 0.011045 / 0.63284 degrees
+RMS Gain Error: 0.021385 / -33.3976 dB
+Number of new measurements: 109
+ 
+Gain Circle 6 at 2.9885 / 9.5092 dB
+RMS Phase Error: 0.0098601 / 0.56494 degrees
+RMS Gain Error: 0.021629 / -33.2992 dB
+Number of new measurements: 119
+ 
+Gain Circle 7 at 3.3532 / 10.5092 dB
+RMS Phase Error: 0.0085964 / 0.49254 degrees
+RMS Gain Error: 0.021926 / -33.1807 dB
+Number of new measurements: 127
+ 
+Gain Circle 8 at 3.7624 / 11.5092 dB
+RMS Phase Error: 0.0078784 / 0.4514 degrees
+RMS Gain Error: 0.026708 / -31.4672 dB
+Number of new measurements: 131
+ 
+Channel 1 Calibration Finish
+Total RMS Phase Error: 0.011945 / 0.6844 degrees
+Peak Phase Error: 0.034939 / 2.0018 degrees
+Total RMS Gain Error: 0.024806 / -32.1087 dB
+Peak Gain Error: 0.068927 / -11.6161 dB
+Total number of measurements for 8 gain circles: 1183
+ 
+Channel 1 Calibration Time: 333.1321 seconds
+ 
+ 
+Starting channel 2 characterization using Transfer Learning
+Using uniform sampling pattern
+EQUAL_SPACING_SAMPLING = 0
+SUPPLEMENT_LEARNING_SAMPLE_SIZE = 100
+Learning sample size after adjustment: 100
+ 
+Channel 2 training finish
+Pre-characterization measurements: 100
+ 
+Gain Circle 1 at 1.6806 / 4.5092 dB
+RMS Phase Error: 0.015709 / 0.90007 degrees
+RMS Gain Error: 0.022884 / -32.8092 dB
+Number of new measurements: 104
+ 
+Gain Circle 2 at 1.8856 / 5.5092 dB
+RMS Phase Error: 0.01353 / 0.7752 degrees
+RMS Gain Error: 0.021809 / -33.2274 dB
+Number of new measurements: 103
+ 
+Gain Circle 3 at 2.1157 / 6.5092 dB
+RMS Phase Error: 0.013062 / 0.74838 degrees
+RMS Gain Error: 0.024792 / -32.1137 dB
+Number of new measurements: 99
+ 
+Gain Circle 4 at 2.3739 / 7.5092 dB
+RMS Phase Error: 0.012732 / 0.72949 degrees
+RMS Gain Error: 0.023731 / -32.4938 dB
+Number of new measurements: 100
+ 
+Gain Circle 5 at 2.6635 / 8.5092 dB
+RMS Phase Error: 0.011035 / 0.63226 degrees
+RMS Gain Error: 0.025411 / -31.8996 dB
+Number of new measurements: 110
+ 
+Gain Circle 6 at 2.9885 / 9.5092 dB
+RMS Phase Error: 0.010189 / 0.58376 degrees
+RMS Gain Error: 0.026925 / -31.3969 dB
+Number of new measurements: 123
+ 
+Gain Circle 7 at 3.3532 / 10.5092 dB
+RMS Phase Error: 0.0094066 / 0.53896 degrees
+RMS Gain Error: 0.028907 / -30.7801 dB
+Number of new measurements: 127
+ 
+Gain Circle 8 at 3.7624 / 11.5092 dB
+RMS Phase Error: 0.0079922 / 0.45792 degrees
+RMS Gain Error: 0.026962 / -31.385 dB
+Number of new measurements: 133
+ 
+Channel 2 Calibration Finish
+Total RMS Phase Error: 0.01194 / 0.6841 degrees
+Peak Phase Error: 0.036311 / 2.0805 degrees
+Total RMS Gain Error: 0.025274 / -31.9464 dB
+Peak Gain Error: 0.067183 / -11.7274 dB
+Total number of measurements for 8 gain circles: 999
+ 
+Channel 2 Calibration Time: 281.8967 seconds
+Array Calibration Finish
+Total number of measurements for 2 channels: 2182
+ 
+ 
+Mapping saved to Mapping_SI.mat
+Total calibration time for 2 channels: 615.1709 seconds

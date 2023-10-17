@@ -1,0 +1,123 @@
+Starting Supervised Calibration with kernel size of 1
+Number of channels: 2
+CHANNEL_TRANSFORMATION = 1
+Calibrating for 1 to 8 out of 12 gain circles
+ 
+ 
+Starting channel 1 characterization using Point Translation Algorithm
+GAIN_PROFILE_SIZE = 10
+OUTLINE_PROFILE_SIZE = 30
+ 
+Channel 1 characterization finish
+Pre-characterization measurements: 39
+ 
+Gain Circle 1 at 1.6982 / 4.6 dB
+RMS Phase Error: 0.016767 / 0.96065 degrees
+RMS Gain Error: 0.025924 / -31.7259 dB
+Number of new measurements: 95
+ 
+Gain Circle 2 at 1.9055 / 5.6 dB
+RMS Phase Error: 0.012796 / 0.73316 degrees
+RMS Gain Error: 0.020493 / -33.7681 dB
+Number of new measurements: 102
+ 
+Gain Circle 3 at 2.138 / 6.6 dB
+RMS Phase Error: 0.013036 / 0.74689 degrees
+RMS Gain Error: 0.021013 / -33.5503 dB
+Number of new measurements: 104
+ 
+Gain Circle 4 at 2.3988 / 7.6 dB
+RMS Phase Error: 0.013807 / 0.79109 degrees
+RMS Gain Error: 0.016665 / -35.5641 dB
+Number of new measurements: 107
+ 
+Gain Circle 5 at 2.6915 / 8.6 dB
+RMS Phase Error: 0.011768 / 0.67428 degrees
+RMS Gain Error: 0.017861 / -34.9617 dB
+Number of new measurements: 108
+ 
+Gain Circle 6 at 3.02 / 9.6 dB
+RMS Phase Error: 0.010618 / 0.60837 degrees
+RMS Gain Error: 0.02024 / -33.876 dB
+Number of new measurements: 110
+ 
+Gain Circle 7 at 3.3884 / 10.6 dB
+RMS Phase Error: 0.0099379 / 0.5694 degrees
+RMS Gain Error: 0.019718 / -34.1028 dB
+Number of new measurements: 113
+ 
+Gain Circle 8 at 3.8019 / 11.6 dB
+RMS Phase Error: 0.0078327 / 0.44878 degrees
+RMS Gain Error: 0.025456 / -31.8841 dB
+Number of new measurements: 120
+ 
+Channel 1 Calibration Finish
+Total RMS Phase Error: 0.012333 / 0.70661 degrees
+Peak Phase Error: 0.040266 / 2.307 degrees
+Total RMS Gain Error: 0.021145 / -33.496 dB
+Peak Gain Error: 0.065967 / -11.8067 dB
+Total number of measurements for 8 gain circles: 898
+ 
+Channel 1 Calibration Time: 430.2763 seconds
+ 
+ 
+Starting channel 2 characterization using Transformed Point Translation Algorithm
+Number of transformation sample = 1
+ 
+Channel 2 characterization finish
+Pre-characterization measurements: 1
+ 
+Gain Circle 1 at 1.6982 / 4.6 dB
+RMS Phase Error: 0.015962 / 0.91458 degrees
+RMS Gain Error: 0.024991 / -32.0442 dB
+Number of new measurements: 100
+ 
+Gain Circle 2 at 1.9055 / 5.6 dB
+RMS Phase Error: 0.016351 / 0.93685 degrees
+RMS Gain Error: 0.024443 / -32.2369 dB
+Number of new measurements: 99
+ 
+Gain Circle 3 at 2.138 / 6.6 dB
+RMS Phase Error: 0.015097 / 0.86499 degrees
+RMS Gain Error: 0.02385 / -32.4504 dB
+Number of new measurements: 107
+ 
+Gain Circle 4 at 2.3988 / 7.6 dB
+RMS Phase Error: 0.011575 / 0.66321 degrees
+RMS Gain Error: 0.02262 / -32.9102 dB
+Number of new measurements: 111
+ 
+Gain Circle 5 at 2.6915 / 8.6 dB
+RMS Phase Error: 0.011173 / 0.64017 degrees
+RMS Gain Error: 0.023075 / -32.737 dB
+Number of new measurements: 116
+ 
+Gain Circle 6 at 3.02 / 9.6 dB
+RMS Phase Error: 0.010375 / 0.59444 degrees
+RMS Gain Error: 0.020844 / -33.6202 dB
+Number of new measurements: 121
+ 
+Gain Circle 7 at 3.3884 / 10.6 dB
+RMS Phase Error: 0.0086982 / 0.49837 degrees
+RMS Gain Error: 0.022178 / -33.0817 dB
+Number of new measurements: 122
+ 
+Gain Circle 8 at 3.8019 / 11.6 dB
+RMS Phase Error: 0.0082646 / 0.47353 degrees
+RMS Gain Error: 0.021009 / -33.5518 dB
+Number of new measurements: 129
+ 
+Channel 2 Calibration Finish
+Total RMS Phase Error: 0.012552 / 0.7192 degrees
+Peak Phase Error: 0.035508 / 2.0345 degrees
+Total RMS Gain Error: 0.02292 / -32.7956 dB
+Peak Gain Error: 0.068248 / -11.6591 dB
+Total number of measurements for 8 gain circles: 906
+ 
+Channel 2 Calibration Time: 430.649 seconds
+Array Calibration Finish
+Total number of measurements for 2 channels: 1804
+ 
+ 
+Mapping saved to Mapping_SI.mat
+Total calibration time for 2 channels: 863.3101 seconds

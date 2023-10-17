@@ -83,8 +83,6 @@ classdef measurementClass
                         en          = [1 0 1 1]    ; %RF1, RF2, RF3, RF4 (0 or 1)
                         
                     case 2
-                        Pna = pna('Set_PNA_Parameters2');
-
                         phase       = [0 0 0 (phase_index-1)]    ; %RF1, RF2, RF3, RF4 (0 to 255)
                         atten       = [0 0 0 (gain_index-1)]  ; %RF1, RF2, RF3, RF4 (0 to 255)
                         en          = [1 1 1 0]    ; %RF1, RF2, RF3, RF4 (0 or 1)

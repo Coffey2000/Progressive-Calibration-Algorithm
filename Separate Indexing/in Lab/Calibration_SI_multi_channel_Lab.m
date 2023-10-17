@@ -19,21 +19,21 @@ PERFORMANCE_MODE = 1;
 
 %%
 NUM_CHANNEL = 2;
-CHANNEL_TRANSFORMATION = 0;
+CHANNEL_TRANSFORMATION = 1;
 SUPPLEMENT_LEARNING_SAMPLE_SIZE = 100;
 
 
 %%
-VALIDATION = 1;
-ENABLE_UNSUPERVISED_CALIBRATION_CHECK = 1;  % if enabled, unsupervised calibration results will be checked by measurement
+VALIDATION = 0;
+ENABLE_UNSUPERVISED_CALIBRATION_CHECK = 0;  % if enabled, unsupervised calibration results will be checked by measurement
 PLOT_TARGET_POINTS = 1;
 
 
 %%
-USE_MACHINE_LEARNING = 0;
-SAMPLING_PATTERN = "random";    %choose "uniform", "woven" or "random"
-EQUAL_SPACING_SAMPLING = 1;
-LEARNING_SAMPLE_SIZE = 200;
+USE_MACHINE_LEARNING = 1;
+SAMPLING_PATTERN = "uniform";    %choose "uniform", "woven" or "random"
+EQUAL_SPACING_SAMPLING = 0;
+LEARNING_SAMPLE_SIZE = 300;
 ENABLE_OUTLINE_SAMPLING = 0;
 
 GAIN_PROFILE_SIZE = 10;
@@ -50,7 +50,7 @@ Ending_Gain_Index = 8;
 filter_tolerance = 1;
 
 %%
-load("channel_readings_38GHz.mat");
+%load("channel_readings_38GHz.mat");
 
 
 mkdir("Calibration Report");
@@ -117,6 +117,8 @@ total_measurement_counter = 0;
 
 preCharacterization_measurement_counter = 0;
 total_preCharacterization_measurement_counter = 0;
+
+previous_total_channel_calibration_time = 0;
 
 num_hit = 0;
 total_num_hit = 0;
@@ -280,7 +282,7 @@ function [next_measurements, next_choice, next_state] = Calibration_FSM(current_
         target_gain_states_dB_normalized target_gain_states_dB min_target_gain actual_gain_resolution actual_phase_resolution kernel_offset measurement_counter max_gain min_gain VALIDATION num_hit total_num_hit...
         LEARNING_SAMPLE_SIZE training_dataset TOTAL_SAMPLE GAIN_PROFILE_SIZE MODEL ENABLE_OUTLINE_SAMPLING NUM_OUTLINE_SAMPLE USE_MACHINE_LEARNING SAMPLING_PATTERN ADJUSTED_LEARNING_SAMPLE_SIZE...
         EQUAL_SPACING_SAMPLING ENABLE_UNSUPERVISED_CALIBRATION_CHECK OUTLINE_PROFILE_SIZE NUM_CHANNEL SUPPLEMENT_LEARNING_SAMPLE_SIZE Current_Calibration_Channel_Index PERFORMANCE_MODE...
-        preCharacterization_measurement_counter total_preCharacterization_measurement_counter CHANNEL_TRANSFORMATION Channel_Adapted_MODEL previous_channel_reference_point
+        preCharacterization_measurement_counter total_preCharacterization_measurement_counter CHANNEL_TRANSFORMATION Channel_Adapted_MODEL previous_channel_reference_point Pna previous_total_channel_calibration_time
     
     % next_phases is a N by 2 matrix where N is the number of phases to measured next and the 2 columns are phase 1 and phase 2.
     % current_measured_points is a N by 1 vector where N is the number of points in the current measurements.
@@ -792,6 +794,8 @@ function [next_measurements, next_choice, next_state] = Calibration_FSM(current_
                             Current_Calibration_Channel_Index = Current_Calibration_Channel_Index + 1;
                             Current_Calibration_Gain_Index = Starting_Gain_Index;
                             Current_Calibration_Phase_Index = 1;
+
+                            Pna = pna('Set_PNA_Parameters2');
     
                             next_state = "Start Channel Calibration";
                             next_measurements = [];
@@ -874,13 +878,28 @@ function [next_measurements, next_choice, next_state] = Calibration_FSM(current_
                         [gain_index, phase_index] = conversionClass.polar2index_SI(target_gain_states(target_gain_index), target_phase_states(target_phase_index));
                     end
     
-                    Mapping_SI(target_gain_index, target_phase_index) = conversionClass.index2code(gain_index, phase_index);
+                    Mapping_SI(target_gain_index, target_phase_index, Current_Calibration_Channel_Index) = conversionClass.index2code(gain_index, phase_index);
                 end
             end
     
-            next_state = "Finish Calibration";
-            next_measurements = [];
-            next_choice = "";
+            previous_total_channel_calibration_time = toc - previous_total_channel_calibration_time;
+            dispWrite(" ");
+            dispWrite("Channel " + Current_Calibration_Channel_Index + " Calibration Time: " + previous_total_channel_calibration_time + " seconds");
+
+            if Current_Calibration_Channel_Index == NUM_CHANNEL
+                next_state = "Finish Calibration";
+                next_measurements = [];
+                next_choice = "";
+            else
+                Current_Calibration_Channel_Index = Current_Calibration_Channel_Index + 1;
+
+                Pna = pna('Set_PNA_Parameters2');
+
+                next_state = "Start Channel Calibration";
+                next_measurements = [];
+                next_choice = "";
+            end
+
     
     
     

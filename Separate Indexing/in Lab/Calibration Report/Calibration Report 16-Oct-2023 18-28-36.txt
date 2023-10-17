@@ -1,0 +1,29 @@
+Starting Unsupervised Calibration with kernel size of 1
+In Performance Mode: no plots will be shown.
+Number of channels: 2
+CHANNEL_TRANSFORMATION = 0
+Calibrating for 1 to 8 out of 12 gain circles
+ENABLE_UNSUPERVISED_CALIBRATION_CHECK = 0
+ 
+ 
+Starting channel 1 characterization using Point Translation Algorithm
+GAIN_PROFILE_SIZE = 10
+OUTLINE_PROFILE_SIZE = 30
+ 
+Channel 1 characterization finish
+Pre-characterization measurements: 39
+ 
+Channel 1 Calibration Time: 11.9724 seconds
+ 
+ 
+Starting channel 2 characterization using Point Translation Algorithm
+GAIN_PROFILE_SIZE = 10
+OUTLINE_PROFILE_SIZE = 30
+ 
+Channel 2 characterization finish
+Pre-characterization measurements: 39
+ 
+Channel 2 Calibration Time: 11.2901 seconds
+ 
+Mapping saved to Mapping_SI.mat
+Total calibration time for 2 channels: 23.3077 seconds
