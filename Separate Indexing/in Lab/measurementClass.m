@@ -1,46 +1,10 @@
 classdef measurementClass
     methods (Static)
         
-        function measurementSetup()
-            global array Pna
-            
-            addpath('.\Library');
-            addpath('.\Classes');
-            addpath('.\Init Files');
-            addpath('.\Functions');
-            addpath('.\Parameters');
-            
-            
-            % Total number of chips
-            numberOfICs             = 1;
-            numberOfICsDaisyChained = 1;  
-            
-            % Create instance of the array
-            array    = mmw9003kcArray('numberOfICs', numberOfICs, ...
-                'numberOfICsDaisyChained', numberOfICsDaisyChained, 'csPin', {'cs0'});
-            Pna                 = pna('Set_PNA_Parameters');
-            
-            % Select array mode
-            array.mode('TX'); % SBY, TX, RX, SLP
-        end
-
-
-
-        
-        function measurementOFF()
-            global array Pna
-            array.mode('SBY'); % SBY, TX, RX, SLP
-            Pna.turnOFF;
-        end
-
-
-
-
-        
         function reading = measure(next, choice)
             global Measurements measurement_counter total_channel_measurement_counter ...
             num_actual_gain_states num_actual_phase_states channel2B_Channels_OFF_Atten_Phase...
-            LOG_FILE_NAME Current_Calibration_Channel_Index array Pna
+            LOG_FILE_NAME Current_Calibration_Channel_Index array Pna IN_LAB channel_readings_38GHz
             
             if size(next, 1) == 0
                 reading = [];
@@ -76,6 +40,8 @@ classdef measurementClass
             
             if previous_measurement == 1234
             
+                if IN_LAB
+                
                 switch Current_Calibration_Channel_Index
                     case 1
                         phase       = [0 (phase_index-1) 0 0]    ; %RF1, RF2, RF3, RF4 (0 to 255)
@@ -92,6 +58,10 @@ classdef measurementClass
                 [array, readData] = array.setBW0(phase, atten, en);
                 
                 reading = Pna.getSParameters;
+
+                else
+                    reading = channel_readings_38GHz(gain_index, phase_index, Current_Calibration_Channel_Index);
+                end
             
                 Measurements(gain_index, phase_index, Current_Calibration_Channel_Index) = reading;
                 measurement_counter = measurement_counter + 1;
@@ -100,6 +70,43 @@ classdef measurementClass
                 reading = previous_measurement;
             end
     end
+
+
+
+
+    
+        function measurementSetup()
+            global array Pna
+            
+            addpath('.\Library');
+            addpath('.\Classes');
+            addpath('.\Init Files');
+            addpath('.\Functions');
+            addpath('.\Parameters');
+            
+            
+            % Total number of chips
+            numberOfICs             = 1;
+            numberOfICsDaisyChained = 1;  
+            
+            % Create instance of the array
+            array    = mmw9003kcArray('numberOfICs', numberOfICs, ...
+                'numberOfICsDaisyChained', numberOfICsDaisyChained, 'csPin', {'cs0'});
+            Pna                 = pna('Set_PNA_Parameters');
+            
+            % Select array mode
+            array.mode('TX'); % SBY, TX, RX, SLP
+        end
+
+
+
+        
+        function measurementOFF()
+            global array Pna
+            array.mode('SBY'); % SBY, TX, RX, SLP
+            Pna.turnOFF;
+        end
+
         
         
         

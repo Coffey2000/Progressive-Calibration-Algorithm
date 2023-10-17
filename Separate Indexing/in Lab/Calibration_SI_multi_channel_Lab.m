@@ -5,32 +5,37 @@ global num_target_gain_states num_target_phase_states Measurements Mapping_SI Cu
      phase_offset target_gain_states_dB_normalized actual_phase_resolution actual_phase_states min_target_gain total_channel_measurement_counter kernel_offset VALIDATION num_hit total_num_hit...
      total_phase_MSE total_gain_MSE LEARNING_SAMPLE_SIZE MODEL ENABLE_OUTLINE_SAMPLING GAIN_PROFILE_SIZE USE_MACHINE_LEARNING SAMPLING_PATTERN EQUAL_SPACING_SAMPLING ENABLE_UNSUPERVISED_CALIBRATION_CHECK OUTLINE_PROFILE_SIZE...
     max_phase_error max_gain_error channel_readings_38GHz NUM_CHANNEL SUPPLEMENT_LEARNING_SAMPLE_SIZE Current_Calibration_Channel_Index LOG_FILE_NAME PERFORMANCE_MODE total_measurement_counter...
-    preCharacterization_measurement_counter total_preCharacterization_measurement_counter CHANNEL_TRANSFORMATION Channel_Adapted_MODEL previous_total_channel_calibration_time
+    preCharacterization_measurement_counter total_preCharacterization_measurement_counter CHANNEL_TRANSFORMATION Channel_Adapted_MODEL previous_total_channel_calibration_time IN_LAB
 
 warning("off", "all");
 
+IN_LAB = 1;
+
 tic;
-measurementClass.measurementSetup();
+
+if IN_LAB
+    measurementClass.measurementSetup();
+end
 
 
 %%
-PERFORMANCE_MODE = 1;
+PERFORMANCE_MODE = 0;
+VALIDATION = 0;
+USE_MACHINE_LEARNING = 0;
+CHANNEL_TRANSFORMATION = 0;
+ENABLE_UNSUPERVISED_CALIBRATION_CHECK = 1;  % if enabled, unsupervised calibration results will be checked by measurement
 
 
 %%
 NUM_CHANNEL = 2;
-CHANNEL_TRANSFORMATION = 1;
 SUPPLEMENT_LEARNING_SAMPLE_SIZE = 100;
 
 
 %%
-VALIDATION = 0;
-ENABLE_UNSUPERVISED_CALIBRATION_CHECK = 0;  % if enabled, unsupervised calibration results will be checked by measurement
 PLOT_TARGET_POINTS = 1;
 
 
 %%
-USE_MACHINE_LEARNING = 1;
 SAMPLING_PATTERN = "uniform";    %choose "uniform", "woven" or "random"
 EQUAL_SPACING_SAMPLING = 0;
 LEARNING_SAMPLE_SIZE = 300;
@@ -49,8 +54,9 @@ Ending_Gain_Index = 8;
 
 filter_tolerance = 1;
 
-%%
-%load("channel_readings_38GHz.mat");
+if ~IN_LAB
+    load("channel_readings_38GHz.mat");
+end
 
 
 mkdir("Calibration Report");
@@ -159,7 +165,11 @@ while (next_state ~= "Finish Calibration")
     if present_state == "Start Channel Calibration" && ~PERFORMANCE_MODE
         figure;
         figure_number = figure_number + 1;
-        set(gcf, 'Position',  [400 + 20*figure_number, 150 + 20*figure_number, 1000, 800]);
+        if IN_LAB
+            set(gcf, 'Position',  [400 + 20*figure_number, 150 + 20*figure_number, 1000, 800]);
+        else
+            set(gcf, 'Position',  [900 + 20*figure_number, 300 + 20*figure_number, 1000, 800]);
+        end
     end
 
     num_next_measurements = size(next_measurements, 1);
@@ -169,6 +179,7 @@ while (next_state ~= "Finish Calibration")
         current_measured_points = zeros(num_next_measurements, 3);
 
         for i = 1:1:num_next_measurements
+
             current_measured_points(i, 1) = measurementClass.measure(next_measurements(i, :), next_choice);
             current_measured_points(i, 2:end) = next_measurements(i, :);
 
@@ -257,7 +268,9 @@ dispWrite("Mapping saved to Mapping_SI.mat");
 
 dispWrite("Total calibration time for " + NUM_CHANNEL + " channels: " + toc + " seconds");
 
-measurementClass.measurementOFF();
+if IN_LAB
+    measurementClass.measurementOFF();
+end
 
 
     
@@ -282,7 +295,8 @@ function [next_measurements, next_choice, next_state] = Calibration_FSM(current_
         target_gain_states_dB_normalized target_gain_states_dB min_target_gain actual_gain_resolution actual_phase_resolution kernel_offset measurement_counter max_gain min_gain VALIDATION num_hit total_num_hit...
         LEARNING_SAMPLE_SIZE training_dataset TOTAL_SAMPLE GAIN_PROFILE_SIZE MODEL ENABLE_OUTLINE_SAMPLING NUM_OUTLINE_SAMPLE USE_MACHINE_LEARNING SAMPLING_PATTERN ADJUSTED_LEARNING_SAMPLE_SIZE...
         EQUAL_SPACING_SAMPLING ENABLE_UNSUPERVISED_CALIBRATION_CHECK OUTLINE_PROFILE_SIZE NUM_CHANNEL SUPPLEMENT_LEARNING_SAMPLE_SIZE Current_Calibration_Channel_Index PERFORMANCE_MODE...
-        preCharacterization_measurement_counter total_preCharacterization_measurement_counter CHANNEL_TRANSFORMATION Channel_Adapted_MODEL previous_channel_reference_point Pna previous_total_channel_calibration_time
+        preCharacterization_measurement_counter total_preCharacterization_measurement_counter CHANNEL_TRANSFORMATION Channel_Adapted_MODEL previous_channel_reference_point Pna previous_total_channel_calibration_time...
+        IN_LAB
     
     % next_phases is a N by 2 matrix where N is the number of phases to measured next and the 2 columns are phase 1 and phase 2.
     % current_measured_points is a N by 1 vector where N is the number of points in the current measurements.
@@ -795,7 +809,10 @@ function [next_measurements, next_choice, next_state] = Calibration_FSM(current_
                             Current_Calibration_Gain_Index = Starting_Gain_Index;
                             Current_Calibration_Phase_Index = 1;
 
-                            Pna = pna('Set_PNA_Parameters', {'S41'});
+                            if IN_LAB
+                                Pna.pnaSettings.measurementType = {'S41'};
+                                Pna.setPnaParameters;
+                            end
     
                             next_state = "Start Channel Calibration";
                             next_measurements = [];
@@ -893,7 +910,10 @@ function [next_measurements, next_choice, next_state] = Calibration_FSM(current_
             else
                 Current_Calibration_Channel_Index = Current_Calibration_Channel_Index + 1;
 
-                Pna = pna('Set_PNA_Parameters', {'S41'});
+                if IN_LAB
+                    Pna.pnaSettings.measurementType = {'S41'};
+                    Pna.setPnaParameters;
+                end
 
                 next_state = "Start Channel Calibration";
                 next_measurements = [];
