@@ -6,16 +6,24 @@ classdef pna < handle
 
     methods
         
-        function obj = pna(settingsPath)
-            obj    = obj.initPna(settingsPath)  ;
+        function obj = pna(settingsPath, varargin)
+
+            obj    = obj.initPna(settingsPath, varargin{1});
+
         end
+
         
-        function obj = initPna(obj, settingsPath)
+        function obj = initPna(obj, settingsPath, varargin)
             pnaSettings      = []   ;
             run(['./Parameters/', settingsPath]) ;
             obj.pnaSettings  = pnaSettings ;  
+            if ~isempty(varargin)
+                obj.pnaSettings.measurementType = varargin{1};
+            end
             obj.setPnaParameters;
         end
+
+
         function obj = setPnaParameters(obj)
             obj.open;
             % Set Input Power

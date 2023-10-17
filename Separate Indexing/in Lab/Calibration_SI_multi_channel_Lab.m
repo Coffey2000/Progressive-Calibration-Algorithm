@@ -795,7 +795,7 @@ function [next_measurements, next_choice, next_state] = Calibration_FSM(current_
                             Current_Calibration_Gain_Index = Starting_Gain_Index;
                             Current_Calibration_Phase_Index = 1;
 
-                            Pna = pna('Set_PNA_Parameters2');
+                            Pna = pna('Set_PNA_Parameters', {'S41'});
     
                             next_state = "Start Channel Calibration";
                             next_measurements = [];
@@ -893,7 +893,7 @@ function [next_measurements, next_choice, next_state] = Calibration_FSM(current_
             else
                 Current_Calibration_Channel_Index = Current_Calibration_Channel_Index + 1;
 
-                Pna = pna('Set_PNA_Parameters2');
+                Pna = pna('Set_PNA_Parameters', {'S41'});
 
                 next_state = "Start Channel Calibration";
                 next_measurements = [];

@@ -20,6 +20,11 @@ array    = mmw9003kcArray('numberOfICs', numberOfICs, ...
     'numberOfICsDaisyChained', numberOfICsDaisyChained, 'csPin', {'cs0'});
 Pna                 = pna('Set_PNA_Parameters');
 
+Pna                 = pna('Set_PNA_Parameters', {'S41'});
+Pna.pnaSettings.measurementType = {'S41'};
+Pna.setPnaParameters;
+
+
 % Select array mode
 array.mode('TX'); % SBY, TX, RX, SLP
 
