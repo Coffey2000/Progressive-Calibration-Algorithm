@@ -1,0 +1,33 @@
+Starting Unsupervised Calibration with kernel size of 1
+In Performance Mode: no plots will be shown.
+Number of channels: 2
+CHANNEL_TRANSFORMATION = 1
+Calibrating for 1 to 8 out of 12 gain circles
+ENABLE_UNSUPERVISED_CALIBRATION_CHECK = 0
+ 
+ 
+Starting channel 1 characterization using Machine Learning
+Using uniform sampling pattern
+EQUAL_SPACING_SAMPLING = 0
+LEARNING_SAMPLE_SIZE = 300
+Learning sample size after adjustment: 306
+ 
+Channel 1 training finish
+Pre-characterization measurements: 306
+ 
+Channel 1 Calibration Time: 88.1486 seconds
+ 
+ 
+Starting channel 2 characterization using Transfer Learning
+Using uniform sampling pattern
+EQUAL_SPACING_SAMPLING = 0
+SUPPLEMENT_LEARNING_SAMPLE_SIZE = 100
+Learning sample size after adjustment: 100
+ 
+Channel 2 training finish
+Pre-characterization measurements: 100
+ 
+Channel 2 Calibration Time: 34.9879 seconds
+ 
+Mapping saved to Mapping_SI.mat
+Total calibration time for 2 channels: 123.1781 seconds

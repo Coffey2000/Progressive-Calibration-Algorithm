@@ -1,0 +1,88 @@
+Starting Unsupervised Calibration with kernel size of 1
+Number of channels: 2
+CHANNEL_TRANSFORMATION = 0
+Calibrating for 1 to 20 out of 20 gain circles
+ENABLE_UNSUPERVISED_CALIBRATION_CHECK = 1
+ 
+ 
+Starting channel 1 characterization using Point Translation Algorithm
+GAIN_PROFILE_SIZE = 50
+OUTLINE_PROFILE_SIZE = 256
+ 
+Channel 1 characterization finish
+Pre-characterization measurements: 305
+ 
+Gain Circle 1 at 0.66571 / -3.5343 dB
+RMS Phase Error: 0.67348 / 38.5874 degrees
+RMS Gain Error: 0.025447 / -31.8872 dB
+Hit rate: 14.0625%
+ 
+Gain Circle 2 at 0.74694 / -2.5343 dB
+RMS Phase Error: 0.67342 / 38.5843 degrees
+RMS Gain Error: 0.020956 / -33.574 dB
+Hit rate: 15.2344%
+ 
+Gain Circle 3 at 0.83808 / -1.5343 dB
+RMS Phase Error: 0.55009 / 31.518 degrees
+RMS Gain Error: 0.028002 / -31.0561 dB
+Hit rate: 16.4062%
+ 
+Gain Circle 4 at 0.94035 / -0.53425 dB
+RMS Phase Error: 0.55066 / 31.5504 degrees
+RMS Gain Error: 0.032038 / -29.8867 dB
+Hit rate: 15.625%
+ 
+Gain Circle 5 at 1.0551 / 0.46575 dB
+RMS Phase Error: 0.55021 / 31.5245 degrees
+RMS Gain Error: 0.035611 / -28.9684 dB
+Hit rate: 14.8438%
+ 
+Gain Circle 6 at 1.1838 / 1.4657 dB
+RMS Phase Error: 0.5503 / 31.5297 degrees
+RMS Gain Error: 0.037579 / -28.501 dB
+Hit rate: 12.1094%
+ 
+Gain Circle 7 at 1.3283 / 2.4657 dB
+RMS Phase Error: 0.67352 / 38.5896 degrees
+RMS Gain Error: 0.041333 / -27.6741 dB
+Hit rate: 12.8906%
+ 
+Gain Circle 8 at 1.4903 / 3.4657 dB
+RMS Phase Error: 0.55076 / 31.5561 degrees
+RMS Gain Error: 0.042798 / -27.3715 dB
+Hit rate: 10.1562%
+ 
+Gain Circle 9 at 1.6722 / 4.4657 dB
+RMS Phase Error: 0.55156 / 31.6022 degrees
+RMS Gain Error: 0.048379 / -26.3068 dB
+Hit rate: 6.25%
+ 
+Gain Circle 10 at 1.8762 / 5.4657 dB
+RMS Phase Error: 0.55082 / 31.5595 degrees
+RMS Gain Error: 0.054026 / -25.3479 dB
+Hit rate: 4.6875%
+ 
+Gain Circle 11 at 2.1052 / 6.4657 dB
+RMS Phase Error: 0.55158 / 31.6031 degrees
+RMS Gain Error: 0.058347 / -24.6796 dB
+Hit rate: 5.0781%
+ 
+Gain Circle 12 at 2.362 / 7.4657 dB
+RMS Phase Error: 0.39024 / 22.359 degrees
+RMS Gain Error: 0.061508 / -24.2213 dB
+Hit rate: 6.25%
+ 
+Gain Circle 13 at 2.6503 / 8.4657 dB
+RMS Phase Error: 0.55187 / 31.6197 degrees
+RMS Gain Error: 0.066031 / -23.6051 dB
+Hit rate: 7.0312%
+ 
+Gain Circle 14 at 2.9736 / 9.4657 dB
+RMS Phase Error: 0.55133 / 31.589 degrees
+RMS Gain Error: 0.069096 / -23.2109 dB
+Hit rate: 5.4688%
+ 
+Gain Circle 15 at 3.3365 / 10.4657 dB
+RMS Phase Error: 0.39022 / 22.3577 degrees
+RMS Gain Error: 0.071033 / -22.9708 dB
+Hit rate: 4.6875%

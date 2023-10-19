@@ -14,9 +14,8 @@ classdef conversionClass
                 phaseDiff = phaseDiff2;
             end
         end
-
-
         
+
 
         function [gain_index, phase_index] = model2index_SI(gain, phase)
             global MODEL Channel_Adapted_MODEL max_gain num_actual_gain_states num_actual_phase_states actual_phase_resolution...

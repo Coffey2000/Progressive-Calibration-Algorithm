@@ -1,0 +1,129 @@
+Starting Supervised Calibration with kernel size of 1
+In Performance Mode: no plots will be shown.
+Number of channels: 2
+CHANNEL_TRANSFORMATION = 0
+Calibrating for 1 to 8 out of 12 gain circles
+ 
+ 
+Starting channel 1 characterization using Machine Learning
+Using uniform sampling pattern
+EQUAL_SPACING_SAMPLING = 0
+LEARNING_SAMPLE_SIZE = 300
+Learning sample size after adjustment: 306
+ 
+Channel 1 training finish
+Pre-characterization measurements: 306
+ 
+Gain Circle 1 at 1.6829 / 4.521 dB
+RMS Phase Error: 0.01541 / 0.8829 degrees
+RMS Gain Error: 0.020191 / -33.897 dB
+Number of new measurements: 122
+ 
+Gain Circle 2 at 1.8882 / 5.521 dB
+RMS Phase Error: 0.01425 / 0.81645 degrees
+RMS Gain Error: 0.024453 / -32.2333 dB
+Number of new measurements: 116
+ 
+Gain Circle 3 at 2.1186 / 6.521 dB
+RMS Phase Error: 0.01269 / 0.72709 degrees
+RMS Gain Error: 0.027818 / -31.1134 dB
+Number of new measurements: 102
+ 
+Gain Circle 4 at 2.3771 / 7.521 dB
+RMS Phase Error: 0.011205 / 0.64199 degrees
+RMS Gain Error: 0.028844 / -30.7989 dB
+Number of new measurements: 103
+ 
+Gain Circle 5 at 2.6672 / 8.521 dB
+RMS Phase Error: 0.0114 / 0.65317 degrees
+RMS Gain Error: 0.02288 / -32.811 dB
+Number of new measurements: 115
+ 
+Gain Circle 6 at 2.9926 / 9.521 dB
+RMS Phase Error: 0.011848 / 0.67882 degrees
+RMS Gain Error: 0.023477 / -32.587 dB
+Number of new measurements: 119
+ 
+Gain Circle 7 at 3.3577 / 10.521 dB
+RMS Phase Error: 0.0098196 / 0.56262 degrees
+RMS Gain Error: 0.024162 / -32.3372 dB
+Number of new measurements: 128
+ 
+Gain Circle 8 at 3.7675 / 11.521 dB
+RMS Phase Error: 0.0075583 / 0.43306 degrees
+RMS Gain Error: 0.02759 / -31.185 dB
+Number of new measurements: 136
+ 
+Channel 1 Calibration Finish
+Total RMS Phase Error: 0.011995 / 0.68724 degrees
+Peak Phase Error: 0.038233 / 2.1906 degrees
+Total RMS Gain Error: 0.025078 / -32.0142 dB
+Peak Gain Error: 0.0669 / -11.7458 dB
+Total number of measurements for 8 gain circles: 1247
+ 
+Channel 1 Calibration Time: 350.0146 seconds
+ 
+ 
+Starting channel 2 characterization using Machine Learning
+Using uniform sampling pattern
+EQUAL_SPACING_SAMPLING = 0
+LEARNING_SAMPLE_SIZE = 300
+Learning sample size after adjustment: 306
+ 
+Channel 2 training finish
+Pre-characterization measurements: 306
+ 
+Gain Circle 1 at 1.6829 / 4.521 dB
+RMS Phase Error: 0.015935 / 0.913 degrees
+RMS Gain Error: 0.025016 / -32.0356 dB
+Number of new measurements: 101
+ 
+Gain Circle 2 at 1.8882 / 5.521 dB
+RMS Phase Error: 0.013855 / 0.79384 degrees
+RMS Gain Error: 0.022516 / -32.95 dB
+Number of new measurements: 106
+ 
+Gain Circle 3 at 2.1186 / 6.521 dB
+RMS Phase Error: 0.014125 / 0.80928 degrees
+RMS Gain Error: 0.026557 / -31.5164 dB
+Number of new measurements: 99
+ 
+Gain Circle 4 at 2.3771 / 7.521 dB
+RMS Phase Error: 0.013148 / 0.75332 degrees
+RMS Gain Error: 0.026315 / -31.596 dB
+Number of new measurements: 101
+ 
+Gain Circle 5 at 2.6672 / 8.521 dB
+RMS Phase Error: 0.011659 / 0.66802 degrees
+RMS Gain Error: 0.023712 / -32.5006 dB
+Number of new measurements: 102
+ 
+Gain Circle 6 at 2.9926 / 9.521 dB
+RMS Phase Error: 0.010761 / 0.61657 degrees
+RMS Gain Error: 0.023179 / -32.698 dB
+Number of new measurements: 112
+ 
+Gain Circle 7 at 3.3577 / 10.521 dB
+RMS Phase Error: 0.0092469 / 0.52981 degrees
+RMS Gain Error: 0.022752 / -32.8596 dB
+Number of new measurements: 112
+ 
+Gain Circle 8 at 3.7675 / 11.521 dB
+RMS Phase Error: 0.0082643 / 0.47351 degrees
+RMS Gain Error: 0.025578 / -31.8427 dB
+Number of new measurements: 109
+ 
+Channel 2 Calibration Finish
+Total RMS Phase Error: 0.012368 / 0.70865 degrees
+Peak Phase Error: 0.039574 / 2.2674 degrees
+Total RMS Gain Error: 0.0245 / -32.2167 dB
+Peak Gain Error: 0.06988 / -11.5565 dB
+Total number of measurements for 8 gain circles: 1148
+ 
+Channel 2 Calibration Time: 321.7683 seconds
+Array Calibration Finish
+Total number of measurements for 2 channels: 2395
+ 
+ 
+Mapping saved to Mapping_SI.mat
+Total calibration time for 2 channels: 671.9395 seconds

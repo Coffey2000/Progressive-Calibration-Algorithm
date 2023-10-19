@@ -2,19 +2,19 @@ classdef measurementClass
     methods (Static)
         
         function reading = measure(next, choice)
-        global Measurements measurement_counter total_channel_measurement_counter channel_readings_38GHz ...
-        max_gain num_actual_gain_states num_actual_phase_states channel2B_Channels_OFF_Atten_Phase actual_phase_resolution...
-        LOG_FILE_NAME Current_Calibration_Channel_Index
-        
+            global Measurements measurement_counter total_channel_measurement_counter ...
+            num_actual_gain_states num_actual_phase_states channel2B_Channels_OFF_Atten_Phase...
+            LOG_FILE_NAME Current_Calibration_Channel_Index array Pna IN_LAB channel_readings_38GHz
+            
             if size(next, 1) == 0
                 reading = [];
                 return
             
             elseif choice == "traditional"
                 target_point = conversionClass.polar2cartesian(next(1), next(2));
-                distance = abs(channel2B_Channels_OFF_Atten_Phase - target_point);
+                distance = abs(channel_readings_38GHz(:, :, Current_Calibration_Channel_Index) - target_point);
                 [i, j] = find(distance == min(distance, [], "all"));
-                reading = channel2B_Channels_OFF_Atten_Phase(i, j);
+                reading = channel_readings_38GHz(i, j, Current_Calibration_Channel_Index);
                 return
 
             elseif choice == "polar"
@@ -32,21 +32,81 @@ classdef measurementClass
                 disp("Error: Invalid choise of measurement");
                 writelines("Error: Invalid choise of measurement", LOG_FILE_NAME, WriteMode="append")
             end
+                
             
-        
 
             %gain_index = num_actual_gain_states - gain_index + 1;
             previous_measurement = Measurements(gain_index, phase_index, Current_Calibration_Channel_Index);
             
             if previous_measurement == 1234
-                reading = channel_readings_38GHz(gain_index, phase_index, Current_Calibration_Channel_Index);
+            
+                if IN_LAB
+                
+                switch Current_Calibration_Channel_Index
+                    case 1
+                        phase       = [0 (phase_index-1) 0 0]    ; %RF1, RF2, RF3, RF4 (0 to 255)
+                        atten       = [0 (gain_index-1) 0 0]  ; %RF1, RF2, RF3, RF4 (0 to 255)
+                        en          = [1 0 1 1]    ; %RF1, RF2, RF3, RF4 (0 or 1)
+                        
+                    case 2
+                        phase       = [0 0 0 (phase_index-1)]    ; %RF1, RF2, RF3, RF4 (0 to 255)
+                        atten       = [0 0 0 (gain_index-1)]  ; %RF1, RF2, RF3, RF4 (0 to 255)
+                        en          = [1 1 1 0]    ; %RF1, RF2, RF3, RF4 (0 or 1)
+                    otherwise
+                end
+
+                [array, readData] = array.setBW0(phase, atten, en);
+                
+                reading = Pna.getSParameters;
+
+                else
+                    reading = channel_readings_38GHz(gain_index, phase_index, Current_Calibration_Channel_Index);
+                end
+            
                 Measurements(gain_index, phase_index, Current_Calibration_Channel_Index) = reading;
                 measurement_counter = measurement_counter + 1;
                 total_channel_measurement_counter = total_channel_measurement_counter + 1;
             else
                 reading = previous_measurement;
             end
+    end
+
+
+
+
+    
+        function measurementSetup()
+            global array Pna
+            
+            addpath('.\Library');
+            addpath('.\Classes');
+            addpath('.\Init Files');
+            addpath('.\Functions');
+            addpath('.\Parameters');
+            
+            
+            % Total number of chips
+            numberOfICs             = 1;
+            numberOfICsDaisyChained = 1;  
+            
+            % Create instance of the array
+            array    = mmw9003kcArray('numberOfICs', numberOfICs, ...
+                'numberOfICsDaisyChained', numberOfICsDaisyChained, 'csPin', {'cs0'});
+            Pna                 = pna('Set_PNA_Parameters');
+            
+            % Select array mode
+            array.mode('TX'); % SBY, TX, RX, SLP
         end
+
+
+
+        
+        function measurementOFF()
+            global array Pna
+            array.mode('SBY'); % SBY, TX, RX, SLP
+            Pna.turnOFF;
+        end
+
         
         
         

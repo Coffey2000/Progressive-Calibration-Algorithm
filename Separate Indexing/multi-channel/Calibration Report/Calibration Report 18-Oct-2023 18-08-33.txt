@@ -1,0 +1,22 @@
+Starting Supervised Calibration with kernel size of 1
+Number of channels: 2
+CHANNEL_TRANSFORMATION = 0
+Calibrating for 1 to 20 out of 20 gain circles
+ 
+ 
+Starting channel 1 characterization using Point Translation Algorithm
+GAIN_PROFILE_SIZE = 50
+OUTLINE_PROFILE_SIZE = 256
+ 
+Channel 1 characterization finish
+Pre-characterization measurements: 305
+ 
+Gain Circle 1 at 0.66571 / -3.5343 dB
+RMS Phase Error: 0.010715 / 0.61395 degrees
+RMS Gain Error: 0.0090972 / -40.8219 dB
+Number of new measurements: 553
+ 
+Gain Circle 2 at 0.74694 / -2.5343 dB
+RMS Phase Error: 0.010616 / 0.60826 degrees
+RMS Gain Error: 0.0079617 / -41.9798 dB
+Number of new measurements: 438
